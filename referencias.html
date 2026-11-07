@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Spacefighter · Referencias</title>
+<style>
+  :root {
+    --bg: #0b0d1a;
+    --panel: #151932;
+    --panel-2: #1d2244;
+    --line: #2c3366;
+    --text: #e8ebff;
+    --muted: #8a92c9;
+    --accent: #5cf2ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.4 "Segoe UI", system-ui, sans-serif; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+  }
+  header h1 {
+    margin: 0; font-size: 18px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: "Courier New", monospace;
+  }
+  header h1 span { color: var(--accent); }
+  nav { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  nav a {
+    color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  nav a.on { color: var(--accent); border-color: var(--accent); }
+  main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+  .bar {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px;
+  }
+  .bar label { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+  button {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: var(--accent); }
+  h2 {
+    margin: 22px 0 4px; font-size: 13px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+  }
+  .src { margin: 0 0 10px; font-size: 12px; color: var(--muted); }
+  .src a { color: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .card canvas.anim {
+    image-rendering: pixelated; border-radius: 6px;
+    background: radial-gradient(ellipse at 50% 30%, #23285a 0%, #0b0d1a 80%);
+  }
+  .card .name { font-weight: 600; }
+  .card .info { font-size: 11px; color: var(--muted); }
+  .strip { max-width: 100%; overflow-x: auto; display: none; }
+  .strip canvas { image-rendering: pixelated; display: block; }
+  body.frames .strip { display: block; }
+  .empty { color: var(--muted); font-size: 13px; }
+  .grid.wide { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .card canvas.bg { width: 100%; aspect-ratio: 16 / 9; border-radius: 6px; image-rendering: pixelated; display: block; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pixel <span>Spacefighter</span> · Referencias</h1>
+  <nav>
+    <a href="index.html">Creador de pilotos</a>
+    <a href="foto.html">Foto → Pixel art</a>
+    <a href="referencias.html" class="on">Referencias</a>
+    <a href="juego.html">🎮 Jugar</a>
+  </nav>
+</header>
+
+<main>
+  <div class="bar">
+    <button id="play">⏸ Pausa</button>
+    <label>Velocidad <input type="range" id="speed" min="0.25" max="2" step="0.25" value="1"> <span id="speedVal">1×</span></label>
+    <label><input type="checkbox" id="showFrames"> Ver todos los cuadros</label>
+  </div>
+  <div id="groups"></div>
+</main>
+
+<script src="assets/fondos.js"></script>
+<script>
+// Cada referencia: hoja PNG con cuadros en filas. rows: [nombre, fila, fps]
+// La cantidad de cuadros se cuenta sola (cuadros vacíos al final se ignoran).
+const GROUPS = [
+  { title: 'Tu piloto', pilot: true,
+    note: 'Se actualiza cada vez que cambias algo en el <a href="index.html">creador</a>.' },
+  { title: 'OpenGameArt · Runner character (32×32)', fw: 32, fh: 32,
+    src: 'assets/opengameart/runner.png',
+    note: 'Blue Yeti Studios · CC0 · <a href="https://opengameart.org/node/70700" target="_blank" rel="noopener">opengameart.org/node/70700</a>',
+    rows: [['Quieto', 0, 8], ['Correr', 1, 12], ['Saltar', 2, 8]] },
+  { title: 'OpenGameArt · Simple character template (32×32)', fw: 32, fh: 32,
+    src: 'assets/opengameart/template-32.png',
+    note: 'CC0 · <a href="https://opengameart.org/content/simple-character-template" target="_blank" rel="noopener">opengameart.org/content/simple-character-template</a>',
+    rows: [['Quieto', 0, 8], ['Caminar', 1, 10]] },
+  { title: 'OpenGameArt · Super Sprite Boy (32×32)', fw: 32, fh: 32,
+    note: 'CC0 · <a href="https://opengameart.org/content/super-sprite-boy-sprite-sheet-30-frames-32x32-64x64" target="_blank" rel="noopener">opengameart.org/content/super-sprite-boy…</a>',
+    sheets: [
+      ['assets/opengameart/super-sprite-boy.png', [['30 cuadros', 0, 8]]],
+      ['assets/opengameart/super-sprite-boy-pelo.png', [['30 cuadros (pelo mejorado)', 0, 8]]],
+    ] },
+  { title: 'OpenGameArt · Heart (32×32)', fw: 32, fh: 32,
+    src: 'assets/opengameart/heart.png',
+    note: 'shinzohotoroki · CC0 · <a href="https://opengameart.org/content/heart-3" target="_blank" rel="noopener">opengameart.org/content/heart-3</a> · corazones de vida del juego',
+    rows: [['Corazón', 0, 1]] },
+  { title: 'CraftPix · paquete local (128×128, recortado)', fw: 128, fh: 128,
+    note: 'Paquetes gratuitos de CraftPix ya incluidos en assets/craftpix · <a href="https://craftpix.net/file-licenses/" target="_blank" rel="noopener">licencia</a>',
+    sheets: [
+      ['assets/craftpix/tirador/Idle.png', [['Quieto (tirador)', 0, 8]]],
+      ['assets/craftpix/heroe-movimiento/Walking.png', [['Caminar', 0, 12]]],
+      ['assets/craftpix/heroe-movimiento/Running.png', [['Correr', 0, 14]]],
+      ['assets/craftpix/heroe-movimiento/Jumping.png', [['Saltar', 0, 10]]],
+      ['assets/craftpix/heroe-movimiento/Landing.png', [['Aterrizar', 0, 10]]],
+    ] },
+];
+
+const TARGET = 128; // alto en pantalla de cada animación
+const cards = [];
+let playing = true, speed = 1;
+
+function loadImage(src) {
+  return new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = src; });
+}
+
+// Corta una fila en cuadros, quita los vacíos del final y recorta al área usada por todos
+function sliceRow(img, fw, fh, row) {
+  const c = document.createElement('canvas'); c.width = img.width; c.height = fh;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.drawImage(img, 0, row * fh, img.width, fh, 0, 0, img.width, fh);
+  const data = x.getImageData(0, 0, img.width, fh).data;
+  const n = Math.floor(img.width / fw);
+  const box = { x0: fw, y0: fh, x1: -1, y1: -1 };
+  let last = -1;
+  for (let f = 0; f < n; f++) {
+    for (let yy = 0; yy < fh; yy++) for (let xx = 0; xx < fw; xx++) {
+      if (data[(yy * img.width + f * fw + xx) * 4 + 3] > 10) {
+        last = f;
+        box.x0 = Math.min(box.x0, xx); box.x1 = Math.max(box.x1, xx);
+        box.y0 = Math.min(box.y0, yy); box.y1 = Math.max(box.y1, yy);
+      }
+    }
+  }
+  if (last < 0) return null;
+  // sprites chicos se muestran completos; los grandes se recortan con un margen
+  if (fw <= 40) Object.assign(box, { x0: 0, y0: 0, x1: fw - 1, y1: fh - 1 });
+  else { box.x0 = Math.max(0, box.x0 - 4); box.y0 = Math.max(0, box.y0 - 4); box.x1 = Math.min(fw - 1, box.x1 + 4); box.y1 = fh - 1; }
+  const w = box.x1 - box.x0 + 1, h = box.y1 - box.y0 + 1;
+  const frames = [];
+  for (let f = 0; f <= last; f++) {
+    const fc = document.createElement('canvas'); fc.width = w; fc.height = h;
+    fc.getContext('2d').drawImage(c, f * fw + box.x0, box.y0, w, h, 0, 0, w, h);
+    frames.push(fc);
+  }
+  return { frames, w, h };
+}
+
+function makeCard(parent, name, info, sliced, fps, durations) {
+  const { frames, w, h } = sliced;
+  const s = Math.max(1, Math.floor(TARGET / h));
+  const card = document.createElement('div'); card.className = 'card';
+  const cv = document.createElement('canvas'); cv.className = 'anim';
+  cv.width = w; cv.height = h; cv.style.width = w * s + 'px'; cv.style.height = h * s + 'px';
+  const strip = document.createElement('div'); strip.className = 'strip';
+  const sc = document.createElement('canvas'); sc.width = w * frames.length; sc.height = h;
+  sc.style.width = w * frames.length * Math.max(1, Math.floor(s / 2)) + 'px';
+  frames.forEach((f, i) => sc.getContext('2d').drawImage(f, i * w, 0));
+  strip.appendChild(sc);
+  card.innerHTML = `<div class="name">${name}</div>`;
+  card.prepend(cv);
+  card.insertAdjacentHTML('beforeend', `<div class="info">${frames.length} cuadros · ${fps} fps · ${info}</div>`);
+  card.appendChild(strip);
+  parent.appendChild(card);
+  cards.push({ ctx: cv.getContext('2d'), frames, fps, durations, t: 0, f: 0, w, h });
+}
+
+async function build() {
+  const root = document.getElementById('groups');
+  for (const g of GROUPS) {
+    root.insertAdjacentHTML('beforeend', `<h2>${g.title}</h2><p class="src">${g.note}</p>`);
+    const grid = document.createElement('div'); grid.className = 'grid'; root.appendChild(grid);
+    if (g.pilot) {
+      let sheet = null;
+      try { sheet = JSON.parse(localStorage.getItem('psf-sheet')); } catch (e) {}
+      if (!sheet) { grid.innerHTML = '<p class="empty">Abre el creador una vez para generar tu piloto.</p>'; continue; }
+      const img = await loadImage(sheet.src);
+      for (const a of Object.values(sheet.animations)) {
+        const sl = sliceRow(img, sheet.frameWidth, sheet.frameHeight, a.row);
+        if (sl) makeCard(grid, a.name, `${sheet.frameWidth}×${sheet.frameHeight}`, sl, a.fps, a.durations);
+      }
+      continue;
+    }
+    const sheets = g.sheets || [[g.src, g.rows]];
+    for (const [src, rows] of sheets) {
+      let img;
+      try { img = await loadImage(src); } catch (e) { grid.insertAdjacentHTML('beforeend', `<p class="empty">No se pudo cargar ${src}</p>`); continue; }
+      for (const [name, row, fps] of rows) {
+        const sl = sliceRow(img, g.fw, g.fh, row);
+        if (sl) makeCard(grid, name, `${g.fw}×${g.fh}`, sl, fps);
+      }
+    }
+  }
+}
+
+// Fondos espaciales con parallax; tu piloto (cuadro de "Quieto") encima para ver cómo se ve
+const bgCards = [];
+async function buildBackgrounds() {
+  const root = document.getElementById('groups');
+  root.insertAdjacentHTML('beforeend', `<h2>Fondos espaciales (parallax)</h2>
+    <p class="src">CC0 · OpenGameArt: <a href="https://opengameart.org/content/space-background-3" target="_blank" rel="noopener">Space Background (ansimuz)</a>,
+    <a href="https://opengameart.org/content/space-parallax-background" target="_blank" rel="noopener">Space Parallax Background</a>,
+    <a href="https://opengameart.org/content/seamless-space-backgrounds" target="_blank" rel="noopener">Seamless Space Backgrounds</a></p>`);
+  const grid = document.createElement('div'); grid.className = 'grid wide'; root.appendChild(grid);
+  let pilot = null;
+  try {
+    const sheet = JSON.parse(localStorage.getItem('psf-sheet'));
+    if (sheet) pilot = { img: await loadImage(sheet.src), fw: sheet.frameWidth, fh: sheet.frameHeight };
+  } catch (e) {}
+  for (const [key, bg] of Object.entries(FONDOS.list)) {
+    const card = document.createElement('div'); card.className = 'card';
+    const cv = document.createElement('canvas'); cv.className = 'bg'; cv.width = 320; cv.height = 180;
+    card.appendChild(cv);
+    card.insertAdjacentHTML('beforeend', `<div class="name">${bg.name}</div><div class="info">${bg.layers.length || 'generado'} ${bg.layers.length ? 'capas' : ''}</div>`);
+    grid.appendChild(card);
+    FONDOS.load(key).catch(() => {});
+    bgCards.push({ ctx: cv.getContext('2d'), key, w: cv.width, h: cv.height });
+  }
+  bgCards.pilot = pilot;
+}
+
+let lastT = 0, bgT = 0;
+function tick(t) {
+  const dt = Math.min(100, t - (lastT || t)); lastT = t;
+  for (const c of cards) {
+    if (playing) {
+      c.t += dt * speed;
+      const step = () => (c.durations && c.durations[c.f]) || 1000 / c.fps;
+      while (c.t >= step()) { c.t -= step(); c.f = (c.f + 1) % c.frames.length; }
+    }
+    c.ctx.clearRect(0, 0, c.w, c.h);
+    c.ctx.drawImage(c.frames[c.f], 0, 0);
+  }
+  if (playing) bgT += dt * speed / 1000;
+  for (const b of bgCards) {
+    FONDOS.draw(b.ctx, b.key, bgT, b.w, b.h);
+    const p = bgCards.pilot;
+    if (p) { b.ctx.imageSmoothingEnabled = false; b.ctx.drawImage(p.img, 0, 0, p.fw, p.fh, b.w / 2 - p.fw, b.h - p.fh * 2 - 8, p.fw * 2, p.fh * 2); }
+  }
+  requestAnimationFrame(tick);
+}
+
+document.getElementById('play').onclick = e => {
+  playing = !playing; e.target.textContent = playing ? '⏸ Pausa' : '▶ Reproducir';
+};
+document.getElementById('speed').oninput = e => {
+  speed = +e.target.value; document.getElementById('speedVal').textContent = speed + '×';
+};
+document.getElementById('showFrames').onchange = e => document.body.classList.toggle('frames', e.target.checked);
+
+build().then(buildBackgrounds).then(() => requestAnimationFrame(tick));
+</script>
+</body>
+</html>

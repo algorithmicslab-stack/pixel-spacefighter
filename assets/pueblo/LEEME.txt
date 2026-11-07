@@ -1,0 +1,7 @@
+"Warped City" de Luis Zuno (@ansimuz) — OpenGameArt.org, CC0 / dominio público.
+https://opengameart.org/content/warped-city
+(ver public-license.txt). Se usa en el pueblo "Puerto Neón" de juego.html:
+ENVIRONMENT/  fondos de la ciudad, tileset (puertas, ventanas, faroles) y letreros animados
+SPRITES/      NPCs (player/idle), robot BOLT (misc/drone), blancos (misc/turret),
+              explosiones (misc/enemy-explosion) y autos voladores (vehicles)
+No se incluyeron los .psd, la demo en JavaScript ni los sonidos del paquete.

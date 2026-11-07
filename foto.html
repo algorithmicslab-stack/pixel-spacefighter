@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Spacefighter · Foto a pixel art</title>
+<style>
+  :root {
+    --bg: #0b0d1a;
+    --panel: #151932;
+    --panel-2: #1d2244;
+    --line: #2c3366;
+    --text: #e8ebff;
+    --muted: #8a92c9;
+    --accent: #5cf2ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.4 "Segoe UI", system-ui, sans-serif; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+  }
+  header h1 {
+    margin: 0; font-size: 18px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: "Courier New", monospace;
+  }
+  header h1 span { color: var(--accent); }
+  nav { display: flex; gap: 8px; margin-left: auto; }
+  nav a {
+    color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  nav a.on { color: var(--accent); border-color: var(--accent); }
+  main {
+    display: grid; grid-template-columns: 280px minmax(0, 1fr) 260px;
+    gap: 16px; padding: 16px; max-width: 1240px; margin: 0 auto;
+  }
+  @media (max-width: 960px) { main { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .panel + .panel { margin-top: 16px; }
+  .panel h2 {
+    margin: 0 0 10px; font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+  }
+  button, select {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit;
+  }
+  select { width: 100%; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #06121a; border-color: var(--accent); font-weight: 700; }
+  button.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); color: var(--accent); }
+  button:disabled { opacity: .4; cursor: default; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .modes button { padding: 10px 6px; }
+  #drop {
+    border: 2px dashed var(--line); border-radius: 10px; padding: 18px 10px; text-align: center;
+    cursor: pointer; color: var(--muted); transition: border-color .15s;
+  }
+  #drop.over, #drop:hover { border-color: var(--accent); color: var(--text); }
+  #drop img { max-width: 100%; max-height: 160px; border-radius: 6px; display: block; margin: 0 auto 8px; }
+  .field { margin-top: 12px; }
+  .field label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .field input[type=range] { width: 100%; accent-color: var(--accent); }
+  label.check { display: flex; align-items: center; gap: 8px; margin-top: 12px; cursor: pointer; }
+  .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .color-item {
+    display: flex; align-items: center; gap: 8px; background: var(--panel-2);
+    border-radius: 6px; padding: 4px 8px; cursor: pointer;
+  }
+  .color-item input { width: 28px; height: 28px; border: none; padding: 0; background: none; cursor: pointer; }
+  .color-item span { font-size: 12px; }
+  .center { display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 0; }
+  .stage {
+    width: 100%; border-radius: 10px; overflow: hidden; position: relative;
+    border: 1px solid var(--line); background: #0b0d1a;
+  }
+  #stage { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+  .empty {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); text-align: center; padding: 20px; background: #0b0d1acc;
+  }
+  .anims { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .touch { justify-content: center; }
+  .touch button { min-width: 48px; user-select: none; touch-action: none; }
+  #videoBox { width: 100%; }
+  #video { width: 100%; border-radius: 10px; border: 1px solid var(--line); background: #000; }
+  .btn-link {
+    color: #06121a; background: var(--accent); padding: 7px 14px; border-radius: 6px;
+    text-decoration: none; font-weight: 700;
+  }
+  #sheet { max-width: 100%; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 6px;
+    background: repeating-conic-gradient(#1a1e3a 0 25%, #151832 0 50%) 0 0 / 16px 16px; }
+  .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; text-align: center; }
+  .panel .hint { text-align: left; }
+  .palette { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 10px; }
+  .palette i { width: 16px; height: 16px; border-radius: 3px; display: block; border: 1px solid #0006; }
+  [hidden] { display: none !important; }
+  .extras { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
+  .extras button { font-size: 12px; padding: 6px 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pixel <span>Spacefighter</span></h1>
+  <nav>
+    <a href="index.html">Creador de pilotos</a>
+    <a href="foto.html" class="on">Foto → Pixel art</a>
+    <a href="referencias.html">Referencias</a>
+    <a href="juego.html">🎮 Jugar</a>
+  </nav>
+</header>
+
+<main>
+  <section>
+    <div class="panel">
+      <h2>1 · Tu foto</h2>
+      <div id="drop">
+        <div id="dropInner">📷 Haz clic, arrastra una foto aquí<br>o pégala con Ctrl+V</div>
+      </div>
+      <input type="file" id="file" accept="image/*" hidden>
+      <p class="hint">Mejor de cuerpo entero, de frente y sobre un fondo liso.</p>
+    </div>
+
+    <div class="panel">
+      <h2>2 · Modo</h2>
+      <div class="modes">
+        <button data-mode="plantilla" class="active">🕹️ Personaje animado</button>
+        <button data-mode="foto">📷 Foto pixelada</button>
+      </div>
+      <p class="hint" id="modeHint"></p>
+    </div>
+
+    <!-- Ajustes del modo plantilla -->
+    <div class="panel" id="tplPanel">
+      <h2>3 · Personaje</h2>
+      <div class="field" style="margin-top:0">
+        <label>Estilo</label>
+        <select id="kit"></select>
+      </div>
+      <div class="field">
+        <label>Colores</label>
+        <div class="color-grid" id="lookColors"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="fromPhoto" disabled>🎨 Tomar colores de la foto</button>
+      </div>
+      <label class="check"><input type="checkbox" id="tplOutline" checked> Contorno</label>
+      <div class="field">
+        <label>Probar otra animación</label>
+        <select id="explore"></select>
+      </div>
+    </div>
+
+    <div class="panel" id="wardPanel">
+      <h2>4 · Vestuario</h2>
+      <div id="wardrobe"></div>
+      <div class="extras" id="extras"></div>
+      <div class="row" style="margin-top:12px">
+        <button id="wardRandom">🎲 Vestuario aleatorio</button>
+        <button id="wardReset">Quitar todo</button>
+      </div>
+      <p class="hint">"Ropa extra" y "Detalles" (en Colores) pintan las prendas.</p>
+    </div>
+
+    <!-- Ajustes del modo foto -->
+    <div class="panel" id="photoPanel" hidden>
+      <h2>3 · Ajustes de la foto</h2>
+      <div class="field" style="margin-top:0">
+        <label>Altura del personaje</label>
+        <select id="size">
+          <option value="32">32 px (muy retro)</option>
+          <option value="48" selected>48 px</option>
+          <option value="64">64 px</option>
+          <option value="96">96 px (más detalle)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Colores <b id="colorsV"></b></label>
+        <input type="range" id="colors" min="3" max="32" value="12">
+      </div>
+      <div class="field">
+        <label>Viveza <b id="vividV"></b></label>
+        <input type="range" id="vivid" min="0" max="100" value="40">
+      </div>
+      <label class="check"><input type="checkbox" id="removeBg" checked> Quitar fondo</label>
+      <div class="field">
+        <label>Tolerancia del fondo <b id="tolV"></b></label>
+        <input type="range" id="tol" min="2" max="100" value="28">
+      </div>
+      <label class="check"><input type="checkbox" id="outline" checked> Contorno</label>
+      <div class="palette" id="palette"></div>
+    </div>
+  </section>
+
+  <section class="center">
+    <div class="stage">
+      <canvas id="stage" width="960" height="480"></canvas>
+      <div class="empty" id="empty" hidden></div>
+    </div>
+    <div class="anims" id="animBtns"></div>
+    <div class="row touch">
+      <button data-key="ArrowLeft" aria-label="Izquierda">◀</button>
+      <button data-key="ArrowRight" aria-label="Derecha">▶</button>
+      <button id="runBtn">🏃 Correr</button>
+      <button class="primary exp" id="recBtn" disabled>🎬 Grabar video</button>
+    </div>
+    <p class="hint" id="keysHint"></p>
+    <p class="hint" id="recStatus"></p>
+    <div id="videoBox" hidden>
+      <video id="video" controls loop playsinline></video>
+      <div class="row" style="justify-content:center;margin-top:8px">
+        <a id="videoDl" class="btn-link">⬇ Descargar video</a>
+      </div>
+    </div>
+    <canvas id="sheet" width="1" height="1"></canvas>
+    <p class="hint">Hoja de sprites: una fila por animación, un cuadro por columna.</p>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>Exportar</h2>
+      <div class="field" style="margin-top:0">
+        <label>Escala</label>
+        <select id="scale">
+          <option value="1" selected>1x</option>
+          <option value="2">2x</option>
+          <option value="4">4x</option>
+        </select>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="primary exp" id="expSheet" disabled>Hoja de sprites PNG</button>
+        <button class="exp" id="expJson" disabled>Datos .json</button>
+      </div>
+      <p class="hint">El .json dice el tamaño de cada cuadro y qué fila es cada animación, para usarlo después en el juego.</p>
+    </div>
+    <div class="panel">
+      <h2>Velocidad</h2>
+      <div class="field" style="margin-top:0">
+        <label>Animación <b id="speedV"></b></label>
+        <input type="range" id="speed" min="25" max="200" value="100">
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Créditos</h2>
+      <p class="hint" style="margin:0">Animaciones del modo "Personaje animado": paquetes gratuitos de
+        <a href="https://craftpix.net/file-licenses/" style="color:var(--accent)">CraftPix.net</a>.</p>
+    </div>
+  </section>
+</main>
+
+<script src="assets/sprites.js"></script>
+<script>
+// =====================================================================
+// Utilidades
+// =====================================================================
+const $ = id => document.getElementById(id);
+const hexToRgb = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const rgbToHex = c => '#' + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+const shade = (rgb, t) => rgb.map(v => v * (1 - t));
+const lum = p => .299 * p[0] + .587 * p[1] + .114 * p[2];
+const HAS_SPRITES = typeof window.SPRITES === 'object';
+
+const ACTION_NAMES = {
+  quieto: 'Quieto', caminar: 'Caminar', correr: 'Correr', saltar: 'Saltar',
+  atacar: 'Atacar', especial: 'Especial', danio: 'Daño', morir: 'Morir',
+};
+const LOOPING = ['quieto', 'caminar', 'correr', 'explorar'];
+
+let mode = HAS_SPRITES ? 'plantilla' : 'foto';
+let character = null;   // { anims: {clave: {name, fps, once, hold, frames:[canvas]}}, order, FW, FH, scale }
+
+// =====================================================================
+// Foto: carga
+// =====================================================================
+let srcImg = null;
+let photo = null;        // resultado del modo foto: { w, h, data, palette }
+let photoColors = null;  // colores detectados para la plantilla
+function loadFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => setPhoto(img, url);
+  img.src = url;
+}
+function setPhoto(img, url) {
+  srcImg = img;
+  $('dropInner').innerHTML = `<img src="${url}" alt="Foto original">Cambiar foto`;
+  processPhoto();
+  if (photoColors) applyPhotoColors();
+}
+$('drop').onclick = () => $('file').click();
+$('file').onchange = e => loadFile(e.target.files[0]);
+$('drop').ondragover = e => { e.preventDefault(); $('drop').classList.add('over'); };
+$('drop').ondragleave = () => $('drop').classList.remove('over');
+$('drop').ondrop = e => { e.preventDefault(); $('drop').classList.remove('over'); loadFile(e.dataTransfer.files[0]); };
+window.addEventListener('paste', e => {
+  const item = [...e.clipboardData.items].find(i => i.type.startsWith('image/'));
+  if (item) loadFile(item.getAsFile());
+});
+
+// =====================================================================
+// Foto: conversión a pixel art
+// =====================================================================
+const photoSettings = () => ({
+  size: +$('size').value, colors: +$('colors').value, vivid: +$('vivid').value / 100,
+  removeBg: $('removeBg').checked, tol: +$('tol').value, outline: $('outline').checked,
+});
+
+function processPhoto() {
+  if (!srcImg) return;
+  const s = photoSettings();
+  const iw = srcImg.naturalWidth || srcImg.width, ih = srcImg.naturalHeight || srcImg.height;
+  const r = Math.min(1, 260 / Math.max(iw, ih));
+  const w = Math.max(1, Math.round(iw * r)), h = Math.max(1, Math.round(ih * r));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(srcImg, 0, 0, w, h);
+  const img = ctx.getImageData(0, 0, w, h).data;
+
+  const sat = 1 + s.vivid * 0.9, con = 1 + s.vivid * 0.35;
+  for (let i = 0; i < img.length; i += 4) {
+    const g = .299 * img[i] + .587 * img[i + 1] + .114 * img[i + 2];
+    for (let k = 0; k < 3; k++) img[i + k] = ((g + (img[i + k] - g) * sat) - 128) * con + 128;
+  }
+
+  const mask = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) mask[i] = img[i * 4 + 3] > 128 ? 1 : 0;
+  if (s.removeBg) removeBackground(img, mask, w, h, s.tol);
+
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) {
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  if (x1 < 0) {
+    photo = null; photoColors = null;
+    if (mode === 'foto') { character = null; onCharacterChanged(); }
+    showEmpty(mode === 'foto' ? 'No quedó nada después de quitar el fondo.<br>Baja la tolerancia o desactiva "Quitar fondo".' : '');
+    return;
+  }
+  const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+
+  const th = s.size, tw = Math.max(4, Math.min(Math.round(s.size * 1.6), Math.round(bw * th / bh)));
+  const acc = new Float64Array(tw * th * 4), tot = new Float64Array(tw * th);
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const t = Math.min(th - 1, Math.floor((y - y0) * th / bh)) * tw + Math.min(tw - 1, Math.floor((x - x0) * tw / bw));
+    tot[t]++;
+    if (!mask[y * w + x]) continue;
+    const i = (y * w + x) * 4;
+    acc[t * 4] += img[i]; acc[t * 4 + 1] += img[i + 1]; acc[t * 4 + 2] += img[i + 2]; acc[t * 4 + 3]++;
+  }
+  const pix = [];
+  const small = new Array(tw * th).fill(null);
+  for (let t = 0; t < tw * th; t++) {
+    const n = acc[t * 4 + 3];
+    if (n / tot[t] >= 0.45) {
+      small[t] = [acc[t * 4] / n, acc[t * 4 + 1] / n, acc[t * 4 + 2] / n];
+      pix.push(small[t]);
+    }
+  }
+  photoColors = detectColors(small, tw, th);
+
+  const palette = kmeans(pix, Math.min(s.colors, pix.length));
+  const pad = 1;
+  const W = tw + pad * 2, H = th + pad * 2;
+  const data = new Uint8ClampedArray(W * H * 4);
+  for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) {
+    const p = small[y * tw + x]; if (!p) continue;
+    const col = palette[nearest(palette, p)];
+    const i = ((y + pad) * W + x + pad) * 4;
+    data[i] = col[0]; data[i + 1] = col[1]; data[i + 2] = col[2]; data[i + 3] = 255;
+  }
+  if (s.outline) {
+    const dark = palette.reduce((a, b) => lum(a) < lum(b) ? a : b).map(v => v * 0.35);
+    addOutline(data, W, H, dark);
+  }
+  photo = { w: W, h: H, data, palette };
+  $('palette').innerHTML = palette.map(p => `<i style="background:rgb(${p.map(Math.round)})"></i>`).join('');
+  $('fromPhoto').disabled = false;
+  if (mode === 'foto') buildPhotoCharacter();
+}
+
+function addOutline(data, W, H, rgb) {
+  const solid = i => data[i * 4 + 3] === 255;
+  const add = [];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (data[(y * W + x) * 4 + 3]) continue;
+    if ((x > 0 && solid(y * W + x - 1)) || (x < W - 1 && solid(y * W + x + 1)) ||
+        (y > 0 && solid((y - 1) * W + x)) || (y < H - 1 && solid((y + 1) * W + x))) add.push(y * W + x);
+  }
+  for (const t of add) { data[t * 4] = rgb[0]; data[t * 4 + 1] = rgb[1]; data[t * 4 + 2] = rgb[2]; data[t * 4 + 3] = 255; }
+}
+
+function removeBackground(img, mask, w, h, tol) {
+  const thr = (tol * 4.4) ** 2;
+  const seen = new Uint8Array(w * h);
+  const seed = new Int32Array(w * h);
+  const q = new Int32Array(w * h);
+  let head = 0, tail = 0;
+  const push = (i, s) => { seen[i] = 1; seed[i] = s; mask[i] = 0; q[tail++] = i; };
+  for (let x = 0; x < w; x++) for (const y of [0, h - 1]) { const i = y * w + x; if (!seen[i]) push(i, i); }
+  for (let y = 0; y < h; y++) for (const x of [0, w - 1]) { const i = y * w + x; if (!seen[i]) push(i, i); }
+  while (head < tail) {
+    const i = q[head++], x = i % w, y = (i / w) | 0, s = seed[i] * 4;
+    for (const n of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1]) {
+      if (n < 0 || seen[n]) continue;
+      const j = n * 4;
+      const d = (img[j] - img[s]) ** 2 + (img[j + 1] - img[s + 1]) ** 2 + (img[j + 2] - img[s + 2]) ** 2;
+      if (d < thr || img[j + 3] < 128) push(n, seed[i]);
+    }
+  }
+  // Quita motas sueltas: conserva solo piezas que no sean diminutas
+  const label = new Int32Array(w * h).fill(-1);
+  const sizes = [];
+  for (let i = 0; i < w * h; i++) {
+    if (!mask[i] || label[i] >= 0) continue;
+    const id = sizes.length;
+    let size = 0; head = 0; tail = 0; q[tail++] = i; label[i] = id;
+    while (head < tail) {
+      const k = q[head++], x = k % w, y = (k / w) | 0; size++;
+      for (const n of [x > 0 ? k - 1 : -1, x < w - 1 ? k + 1 : -1, y > 0 ? k - w : -1, y < h - 1 ? k + w : -1])
+        if (n >= 0 && mask[n] && label[n] < 0) { label[n] = id; q[tail++] = n; }
+    }
+    sizes.push(size);
+  }
+  const big = Math.max(0, ...sizes);
+  for (let i = 0; i < w * h; i++) if (label[i] >= 0 && sizes[label[i]] < big * 0.04) mask[i] = 0;
+}
+
+function nearest(pal, p) {
+  let b = 0, bd = Infinity;
+  for (let i = 0; i < pal.length; i++) {
+    const d = (pal[i][0] - p[0]) ** 2 + (pal[i][1] - p[1]) ** 2 + (pal[i][2] - p[2]) ** 2;
+    if (d < bd) { bd = d; b = i; }
+  }
+  return b;
+}
+function kmeans(pts, k, withCounts) {
+  if (!pts.length) return [[0, 0, 0]];
+  const cents = [pts[Math.floor(pts.length / 2)].slice()];
+  while (cents.length < k) {
+    let far = pts[0], fd = -1;
+    for (let i = 0; i < pts.length; i += Math.max(1, (pts.length / 600) | 0)) {
+      const p = pts[i], d = Math.min(...cents.map(c => (c[0] - p[0]) ** 2 + (c[1] - p[1]) ** 2 + (c[2] - p[2]) ** 2));
+      if (d > fd) { fd = d; far = p; }
+    }
+    if (fd <= 0) break;
+    cents.push(far.slice());
+  }
+  let counts = [];
+  for (let it = 0; it < 12; it++) {
+    const sum = cents.map(() => [0, 0, 0, 0]);
+    for (const p of pts) { const s = sum[nearest(cents, p)]; s[0] += p[0]; s[1] += p[1]; s[2] += p[2]; s[3]++; }
+    sum.forEach((s, i) => { if (s[3]) cents[i] = [s[0] / s[3], s[1] / s[3], s[2] / s[3]]; });
+    counts = sum.map(s => s[3]);
+  }
+  const out = cents.map(c => c.map(v => Math.max(0, Math.min(255, Math.round(v)))));
+  return withCounts ? { cents: out, counts } : out;
+}
+
+// Toma el color dominante de franjas horizontales de la figura (pelo arriba, zapatos abajo)
+function detectColors(small, tw, th) {
+  // avoid: un color ya elegido; se toma el grupo más grande que no se le parezca
+  const region = (a, b, avoid) => {
+    const pts = [];
+    for (let y = Math.floor(a * th); y < Math.max(Math.floor(a * th) + 1, Math.ceil(b * th)); y++)
+      for (let x = Math.floor(tw * 0.25); x < Math.ceil(tw * 0.75); x++) { const p = small[y * tw + x]; if (p) pts.push(p); }
+    if (!pts.length) return null;
+    const { cents, counts } = kmeans(pts, Math.min(3, pts.length), true);
+    const order = counts.map((n, i) => i).sort((i, j) => counts[j] - counts[i]);
+    const far = avoid && order.find(i => counts[i] && cents[i].reduce((s, v, c) => s + (v - avoid[c]) ** 2, 0) > 60 ** 2);
+    return rgbToHex(cents[far !== undefined && far !== false ? far : order[0]]);
+  };
+  const hair = region(0, 0.06);
+  const out = {
+    hair, skin: region(0.06, 0.17, hair && hexToRgb(hair)), shirt: region(0.25, 0.45),
+    pants: region(0.6, 0.82), shoes: region(0.93, 1),
+  };
+  for (const k in out) if (!out[k]) delete out[k];
+  return out;
+}
+
+// =====================================================================
+// Modo foto: animaciones generadas deformando el dibujo
+// =====================================================================
+// Parámetros (en px de un personaje de 32 px, se escalan al tamaño real):
+// breathe: hunde el torso · lean: inclina · sway: mueve piernas · dx/dy: desplaza · sx/sy: aplasta/estira · flash: parpadeo
+const PHOTO_ANIMS = {
+  quieto:  { fps: 4,  frames: [{}, {}, { breathe: 1 }, { breathe: 1 }] },
+  caminar: { fps: 8,  frames: [{ sway: -2 }, { dy: -1 }, { sway: 2 }, { dy: -1 }] },
+  correr:  { fps: 12, frames: [{ sway: -3, lean: 2 }, { dy: -2, lean: 2 }, { sway: 3, lean: 2 }, { dy: -2, lean: 2 }] },
+  saltar:  { fps: 10, frames: [{ sx: 1.15, sy: 0.85 }, { sx: 0.9, sy: 1.1, dy: -4 }, { dy: -10, sway: 1 }, { dy: -10, sway: 1 }, { sx: 0.92, sy: 1.08, dy: -4 }, { sx: 1.15, sy: 0.85 }] },
+  atacar:  { fps: 10, frames: [{}, { lean: -2 }, { lean: 5, dx: 2 }, { lean: 5, dx: 2 }, { lean: 1 }] },
+  danio:   { fps: 10, frames: [{ flash: 1, dx: -2, lean: -2 }, { dx: -2, lean: -1 }, { flash: 1, dx: -1 }, {}] },
+};
+
+function buildPhotoCharacter() {
+  if (!photo) { character = null; onCharacterChanged(); return; }
+  const FW = photo.w + Math.ceil(photo.h * 0.45), FH = photo.h + Math.ceil(photo.h * 0.5);
+  const anims = {};
+  for (const [key, def] of Object.entries(PHOTO_ANIMS)) {
+    anims[key] = {
+      name: ACTION_NAMES[key], fps: def.fps, once: !LOOPING.includes(key),
+      frames: def.frames.map(f => toCanvas(deformFrame(f, FW, FH), FW, FH)),
+    };
+  }
+  character = { anims, order: Object.keys(anims), FW, FH, scale: Math.max(2, Math.floor(300 / FH)) };
+  onCharacterChanged();
+}
+
+function deformFrame(f, FW, FH) {
+  const p = { breathe: 0, lean: 0, sway: 0, dx: 0, dy: 0, sx: 1, sy: 1, flash: 0, ...f };
+  const { w, h, data } = photo;
+  const k = h / 32;
+  const ox = Math.floor((FW - w) / 2), oy = FH - h;
+  const tmp = new Uint8ClampedArray(FW * FH * 4);
+  const hip = Math.round(h * 0.6);
+  const copy = (sx, sy, dx, dy) => {
+    if (dx < 0 || dx >= FW || dy < 0 || dy >= FH) return;
+    const s = (sy * w + sx) * 4; if (!data[s + 3]) return;
+    const d = (dy * FW + dx) * 4;
+    tmp[d] = data[s]; tmp[d + 1] = data[s + 1]; tmp[d + 2] = data[s + 2]; tmp[d + 3] = 255;
+  };
+  for (let y = hip; y < h; y++) {
+    const off = Math.round(p.sway * k * (y - hip) / Math.max(1, h - hip));
+    for (let x = 0; x < w; x++) copy(x, y, x + ox + (x < w / 2 ? off : -off), y + oy);
+  }
+  const b = Math.round(p.breathe * k);
+  for (let y = 0; y < hip; y++) {
+    const off = Math.round(p.lean * k * (hip - y) / hip);
+    for (let x = 0; x < w; x++) copy(x, y, x + ox + off, y + oy + b);
+  }
+  const out = new Uint8ClampedArray(FW * FH * 4);
+  const cx = FW / 2, dxp = Math.round(p.dx * k), dyp = Math.round(p.dy * k);
+  for (let Y = 0; Y < FH; Y++) for (let X = 0; X < FW; X++) {
+    const sx = Math.floor(cx + (X - dxp - cx) / p.sx);
+    const sy = Math.floor(FH - (FH - (Y - dyp)) / p.sy);
+    if (sx < 0 || sx >= FW || sy < 0 || sy >= FH) continue;
+    const s = (sy * FW + sx) * 4; if (!tmp[s + 3]) continue;
+    const d = (Y * FW + X) * 4;
+    for (let c = 0; c < 3; c++) out[d + c] = p.flash ? tmp[s + c] + (255 - tmp[s + c]) * 0.75 : tmp[s + c];
+    out[d + 3] = 255;
+  }
+  return out;
+}
+
+function toCanvas(data, W, H) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  c.getContext('2d').putImageData(new ImageData(data, W, H), 0, 0);
+  return c;
+}
+
+// =====================================================================
+// Modo plantilla: maniquí de CraftPix recoloreado
+// =====================================================================
+// Estilos: qué hoja de sprites usa cada acción
+const KITS = {
+  soldado: { name: '🔫 Soldado espacial', anims: {
+    quieto:   { src: 'tirador/Idle', fps: 8 },
+    caminar:  { src: 'tirador/Walk', fps: 14 },
+    correr:   { src: 'tirador/Run', fps: 16 },
+    saltar:   { src: 'heroe-movimiento/Jumping', fps: 16 },
+    atacar:   { src: 'tirador/Standing_shooting', fps: 12, name: 'Disparar' },
+    especial: { src: 'tirador/Roll', fps: 14, name: 'Rodar' },
+    danio:    { src: 'tirador/Hurt', fps: 10 },
+    morir:    { src: 'tirador/Dead', fps: 8, hold: true },
+  }},
+  luchador: { name: '🥊 Luchador', anims: {
+    quieto:   { src: 'heroe-combate/Defensive_Stance', fps: 4, breathe: true },
+    caminar:  { src: 'heroe-movimiento/Walking', fps: 14 },
+    correr:   { src: 'heroe-movimiento/Running', fps: 16 },
+    saltar:   { src: 'heroe-movimiento/Jumping', fps: 16 },
+    atacar:   { src: 'heroe-combate/Punch_1', fps: 14, name: 'Puñetazo' },
+    especial: { src: 'heroe-combate/Kick', fps: 12, name: 'Patada' },
+    danio:    { src: 'heroe-combate/Hurt', fps: 10 },
+    morir:    { src: 'heroe-habilidades/Death', fps: 8, hold: true },
+  }},
+  mago: { name: '🔮 Mago', anims: {
+    quieto:   { src: 'nigromante/Idle', fps: 8 },
+    caminar:  { src: 'heroe-movimiento/Walking', fps: 14 },
+    correr:   { src: 'heroe-movimiento/Running', fps: 16 },
+    saltar:   { src: 'heroe-movimiento/Jumping', fps: 16 },
+    atacar:   { src: 'nigromante/Magic_Arrow', fps: 12, name: 'Flecha mágica' },
+    especial: { src: 'nigromante/Wave_of_souls', fps: 12, name: 'Ola de almas' },
+    danio:    { src: 'heroe-habilidades/Taking_Damage', fps: 10 },
+    morir:    { src: 'heroe-habilidades/Death', fps: 8, hold: true },
+  }},
+};
+let kitKey = 'soldado';
+let exploreKey = '';
+
+const LOOK_SLOTS = [
+  ['hair', 'Pelo'], ['skin', 'Piel'], ['shirt', 'Camiseta'], ['pants', 'Pantalón'],
+  ['shoes', 'Zapatos'], ['eyes', 'Ojos'], ['outfit', 'Ropa extra'], ['accent', 'Detalles'],
+];
+const DEFAULT_LOOK = {
+  hair: '#3a2410', skin: '#f0c090', shirt: '#2f6fd6', pants: '#2b2f45', shoes: '#1a1a1f', eyes: '#151020',
+  outfit: '#d9dee8', accent: '#3fd8ff',
+};
+let look = { ...DEFAULT_LOOK };
+
+// ---------- Vestuario ----------
+// "Ropa extra" colorea gorra, casco, capucha, chaqueta, armadura y traje; "Detalles" la capa, bufanda, visor, etc.
+const WARDROBE = {
+  cabeza:  { label: 'Cabeza', options: [['nada', 'Nada'], ['gorra', 'Gorra'], ['casco', 'Casco espacial'], ['capucha', 'Capucha'], ['bandana', 'Bandana']] },
+  torso:   { label: 'Torso', options: [['camiseta', 'Camiseta'], ['chaqueta', 'Chaqueta abierta'], ['armadura', 'Armadura'], ['traje', 'Traje espacial completo']] },
+  mangas:  { label: 'Mangas', options: [['largas', 'Largas'], ['cortas', 'Cortas'], ['sin', 'Sin mangas']] },
+  piernas: { label: 'Piernas', options: [['pantalon', 'Pantalón'], ['shorts', 'Shorts']] },
+  calzado: { label: 'Calzado', options: [['zapatos', 'Zapatos'], ['botas', 'Botas altas']] },
+};
+const EXTRAS = [['guantes', '🧤 Guantes'], ['cinturon', '🟫 Cinturón'], ['bufanda', '🧣 Bufanda'], ['capa', '🦸 Capa'], ['mochila', '🚀 Jetpack']];
+const DEFAULT_OUTFIT = { cabeza: 'nada', torso: 'camiseta', mangas: 'largas', piernas: 'pantalon', calzado: 'zapatos' };
+let outfit = { ...DEFAULT_OUTFIT, extras: {} };
+
+// Los 5 tonos del maniquí y qué parte del cuerpo son
+const MANNEQUIN = [
+  [[0xC9, 0xD4, 0xFD], 'L'],   // cabeza y torso
+  [[0x8A, 0xA1, 0xF6], 'M'],   // pierna cercana
+  [[0x5E, 0x71, 0x8E], 'G'],   // brazo cercano
+  [[0x2C, 0x34, 0x38], 'D'],   // pierna lejana
+  [[0x1B, 0x24, 0x47], 'N'],   // brazo lejano
+];
+function classify(r, g, b) {
+  for (const [c, l] of MANNEQUIN) if ((c[0] - r) ** 2 + (c[1] - g) ** 2 + (c[2] - b) ** 2 < 300) return l;
+  return null;
+}
+
+const sheetCache = {};
+function loadSheet(key) {
+  if (!sheetCache[key]) sheetCache[key] = new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0);
+      res({ fs: img.height, n: Math.round(img.width / img.height), data: x.getImageData(0, 0, img.width, img.height) });
+    };
+    img.onerror = rej;
+    img.src = SPRITES[key];
+  });
+  return sheetCache[key];
+}
+
+function recolorFrame(sheet, f, breathe) {
+  const fs = sheet.fs, SW_ = sheet.data.width, src = sheet.data.data;
+  const cls = new Array(fs * fs).fill(null);
+  const out = new Uint8ClampedArray(fs * fs * 4);
+  let topL = fs, minY = fs, maxY = -1, maxLeg = -1;
+  for (let y = 0; y < fs; y++) for (let x = 0; x < fs; x++) {
+    const si = (y * SW_ + f * fs + x) * 4;
+    if (!src[si + 3]) continue;
+    const i = y * fs + x, c = classify(src[si], src[si + 1], src[si + 2]) || 'X';
+    cls[i] = c;
+    out[i * 4] = src[si]; out[i * 4 + 1] = src[si + 1]; out[i * 4 + 2] = src[si + 2]; out[i * 4 + 3] = src[si + 3];
+    if (c === 'X') continue;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+    if (c === 'L' && y < topL) topL = y;
+    if ((c === 'M' || c === 'D') && y > maxLeg) maxLeg = y;
+  }
+  const k = fs / 128, R = n => Math.round(n * k);
+  const headH = R(15), hairH = R(5), backHair = R(10);
+  const torsoTop = topL + headH;
+  // Geometría del cuadro: cabeza, torso (borde de la espalda y del pecho por fila), piernas, hombro
+  let hx0 = fs, hx1 = -1, legTop = fs, sxSum = 0, sxN = 0, backX = fs;
+  const rowMin = new Int32Array(fs).fill(fs), rowMax = new Int32Array(fs).fill(-1);
+  for (let i = 0; i < fs * fs; i++) {
+    const c = cls[i]; if (!c || c === 'X') continue;
+    const x = i % fs, y = (i / fs) | 0;
+    if (c === 'L' && y < torsoTop) { if (x < hx0) hx0 = x; if (x > hx1) hx1 = x; }
+    if (c === 'L' && y >= torsoTop) {
+      if (x < rowMin[y]) rowMin[y] = x; if (x > rowMax[y]) rowMax[y] = x;
+      if (y <= torsoTop + R(3)) { sxSum += x; sxN++; if (x < backX) backX = x; }
+    }
+    if ((c === 'M' || c === 'D') && y < legTop) legTop = y;
+  }
+  const shX = sxN ? sxSum / sxN : fs / 2, shY = torsoTop + R(1);
+  const legLen = Math.max(1, maxLeg - legTop);
+
+  const C = {
+    hair: hexToRgb(look.hair), skin: hexToRgb(look.skin), eyes: hexToRgb(look.eyes),
+    shirt: hexToRgb(look.shirt), pants: hexToRgb(look.pants), shoes: hexToRgb(look.shoes),
+    outfit: hexToRgb(look.outfit), accent: hexToRgb(look.accent),
+  };
+  const o = outfit, ex = o.extras;
+  const shoeLine = maxLeg - (o.calzado === 'botas' ? R(12) : R(4));
+  const shortsLine = legTop + legLen * 0.42;
+  const helmet = C.outfit.map(v => v + (255 - v) * 0.15);
+  const set = (i, col) => { out[i * 4] = col[0]; out[i * 4 + 1] = col[1]; out[i * 4 + 2] = col[2]; out[i * 4 + 3] = 255; };
+  const empty = i => !out[i * 4 + 3];
+  const inside = (x, y) => x >= 0 && y >= 0 && x < fs && y < fs;
+
+  for (let i = 0; i < fs * fs; i++) {
+    const c = cls[i]; if (!c || c === 'X') continue;
+    const x = i % fs, y = (i / fs) | 0;
+    let col;
+    if (c === 'L' && y < torsoTop) {
+      // --- cabeza
+      const hairZone = y < topL + hairH || (x <= hx0 + R(3) && y < topL + backHair);
+      col = hairZone ? C.hair : C.skin;
+      if (o.cabeza === 'gorra' && hairZone && y < topL + hairH) col = C.outfit;
+      if (o.cabeza === 'capucha' && hairZone) col = C.outfit;
+      if (o.cabeza === 'bandana' && y >= topL + R(3) && y < topL + R(5)) col = C.accent;
+      if (o.cabeza === 'casco') {
+        const visor = x >= hx0 + (hx1 - hx0) * 0.45 && y >= topL + R(3) && y < topL + R(11);
+        col = visor ? (y < topL + R(5) && x < hx1 - R(1) ? C.accent.map(v => v + (255 - v) * 0.6) : C.accent) : helmet;
+      }
+    } else if (c === 'L') {
+      // --- torso
+      col = C.shirt;
+      if (o.torso === 'chaqueta') col = x >= rowMax[y] - R(1) ? C.shirt : C.outfit;
+      if (o.torso === 'armadura') col = (y - torsoTop) % R(5) === 0 ? shade(C.outfit, 0.25) : (y < torsoTop + R(2) ? C.outfit.map(v => v + (255 - v) * 0.35) : C.outfit);
+      if (o.torso === 'traje') col = x >= rowMax[y] - R(1) && y < torsoTop + R(8) ? C.accent : C.outfit;
+      if (ex.cinturon && y >= legTop - R(2) && y < legTop) col = x >= rowMax[y] - R(1) ? [230, 190, 60] : [92, 58, 30];
+      if (ex.bufanda && y < torsoTop + R(2)) col = C.accent;
+    } else if (c === 'G' || c === 'N') {
+      // --- brazos: la distancia al hombro dice si es brazo, antebrazo o mano
+      const d = Math.hypot(x - shX, y - shY) / k;
+      let base = (o.torso === 'chaqueta' || o.torso === 'traje') ? C.outfit : C.shirt;
+      if (o.torso === 'armadura' && d < 8) base = C.outfit;
+      if ((o.mangas === 'cortas' && d > 9) || (o.mangas === 'sin' && d > 3)) base = C.skin;
+      if (o.torso === 'traje' && d > 9) base = C.outfit;   // el traje siempre tiene manga larga
+      if (ex.guantes && d > 16) base = C.shoes;
+      col = shade(base, c === 'G' ? 0.18 : 0.45);
+    } else {
+      // --- piernas
+      const far = c === 'D';
+      let base = o.torso === 'traje' ? C.outfit : C.pants;
+      if (o.piernas === 'shorts' && y > shortsLine && o.torso !== 'traje') base = C.skin;
+      if (y > shoeLine) base = C.shoes;
+      else if (o.torso === 'traje' && y > legTop + legLen * 0.45 && y < legTop + legLen * 0.45 + R(3)) base = C.accent;   // rodilleras
+      col = shade(base, far ? 0.35 : 0);
+    }
+    set(i, col);
+  }
+  // ojo (los sprites miran a la derecha); el casco lo tapa
+  if (hx1 > 0 && o.cabeza !== 'casco') {
+    const ex_ = hx1 - R(3), ey = topL + R(7);
+    for (const yy of [ey, ey + 1]) { const i = yy * fs + ex_; if (cls[i] === 'L') set(i, C.eyes); }
+  }
+
+  // --- piezas que sobresalen del cuerpo (solo pintan donde está vacío, así quedan detrás)
+  if (hx1 > 0) {
+    if (o.cabeza === 'gorra') {   // visera hacia adelante
+      for (let x = hx1 + 1; x <= hx1 + R(4); x++) for (const y of [topL + hairH - 1, topL + hairH - 2])
+        if (inside(x, y) && empty(y * fs + x)) set(y * fs + x, shade(C.outfit, 0.25));
+    }
+    if (o.cabeza === 'casco' || o.cabeza === 'capucha') {   // anillo alrededor de la cabeza
+      const ring = [];
+      for (let y = topL - 1; y <= torsoTop; y++) for (let x = hx0 - 1; x <= hx1 + 1; x++) {
+        if (!inside(x, y) || !empty(y * fs + x)) continue;
+        if (o.cabeza === 'capucha' && x > hx1 - R(3)) continue;
+        let near = false;
+        for (let dy = -1; dy <= 1 && !near; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (inside(xx, yy) && cls[yy * fs + xx] === 'L' && yy < torsoTop) { near = true; break; }
+        }
+        if (near) ring.push(y * fs + x);
+      }
+      ring.forEach(i => set(i, o.cabeza === 'casco' ? shade(helmet, 0.12) : shade(C.outfit, 0.2)));
+    }
+    if (o.cabeza === 'bandana') {   // puntas al viento por detrás
+      for (let n = 1; n <= R(5); n++) for (const y of [topL + R(3) + (n >> 1), topL + R(4) + (n >> 1)]) {
+        const x = hx0 - n; if (inside(x, y) && empty(y * fs + x)) set(y * fs + x, shade(C.accent, 0.15));
+      }
+    }
+  }
+  if (sxN) {
+    if (ex.mochila) {   // jetpack en la espalda
+      const x0 = backX - R(7), y0 = torsoTop + R(1), y1 = torsoTop + R(14);
+      for (let y = y0; y < y1; y++) for (let x = x0; x < backX + R(1); x++) {
+        if (!inside(x, y) || !empty(y * fs + x)) continue;
+        let col = [72, 78, 100];                                   // carcasa
+        if (x === x0 || y === y0) col = [128, 136, 160];           // borde iluminado
+        if (y === y0 + R(4) || y === y0 + R(5)) col = C.accent;     // franja
+        if (y >= y1 - R(2)) col = [40, 42, 54];                    // tobera
+        set(y * fs + x, col);
+      }
+      for (let x = x0 + R(1); x < backX - R(1); x++) {             // fuego
+        const y = y1; if (inside(x, y) && empty(y * fs + x)) set(y * fs + x, [255, 140, 40]);
+        const y2 = y1 + 1; if ((x - x0) % 2 && inside(x, y2) && empty(y2 * fs + x)) set(y2 * fs + x, [255, 225, 77]);
+      }
+    }
+    if (ex.capa) {   // se ensancha hacia abajo
+      const bottom = Math.min(maxLeg - R(3), legTop + legLen * 0.75);
+      for (let y = torsoTop; y < bottom; y++) {
+        const w = R(2) + (y - torsoTop) * 0.22;
+        for (let x = Math.round(backX - w); x <= backX + R(2); x++) {
+          if (!inside(x, y) || !empty(y * fs + x)) continue;
+          set(y * fs + x, x < backX - w + R(2) ? shade(C.accent, 0.35) : shade(C.accent, 0.1));
+        }
+      }
+    }
+    if (ex.bufanda) {   // punta que cuelga por detrás
+      for (let n = 0; n < R(6); n++) for (let w = 0; w < R(2); w++) {
+        const x = backX - R(1) - w - (n >> 1), y = torsoTop + n;
+        if (inside(x, y) && empty(y * fs + x)) set(y * fs + x, shade(C.accent, 0.2));
+      }
+    }
+  }
+  let final = out;
+  // respiración: baja el torso y la cabeza 1 px
+  if (breathe && maxY > 0) {
+    final = new Uint8ClampedArray(out.length);
+    const hip = Math.round(minY + (maxY - minY) * 0.5);
+    // de abajo hacia arriba, así el torso desplazado queda encima de las piernas
+    for (let y = fs - 1; y >= 0; y--) for (let x = 0; x < fs; x++) {
+      const s = (y * fs + x) * 4; if (!out[s + 3]) continue;
+      const ty = y < hip ? y + breathe : y;
+      if (ty < fs) final.set(out.subarray(s, s + 4), (ty * fs + x) * 4);
+    }
+  }
+  if ($('tplOutline').checked) addOutline(final, fs, fs, [18, 14, 30]);
+  return toCanvas(final, fs, fs);
+}
+
+async function animFromDef(key, def) {
+  const sh = await loadSheet(def.src);
+  let frames = [];
+  for (let f = 0; f < sh.n; f++) frames.push(recolorFrame(sh, f, 0));
+  if (def.breathe && sh.n === 1) frames = [frames[0], frames[0], recolorFrame(sh, 0, 1), recolorFrame(sh, 0, 1)];
+  return {
+    name: def.name || ACTION_NAMES[key] || key, fps: def.fps || 12,
+    once: !LOOPING.includes(key), hold: !!def.hold, frames, fs: sh.fs,
+  };
+}
+
+let buildToken = 0;
+async function buildTemplateCharacter() {
+  if (!HAS_SPRITES) return;
+  const token = ++buildToken;
+  const kit = KITS[kitKey];
+  const anims = {};
+  for (const [key, def] of Object.entries(kit.anims)) anims[key] = await animFromDef(key, def);
+  if (exploreKey) anims.explorar = await animFromDef('explorar', { src: exploreKey, fps: 12, name: '🔍 ' + prettyName(exploreKey) });
+  if (token !== buildToken || mode !== 'plantilla') return;   // llegó otra petición mientras tanto
+  const order = Object.keys(kit.anims);
+  character = { anims, order, FW: 128, FH: 128, scale: 3 };
+  if (exploreKey) current = 'explorar';
+  onCharacterChanged();
+}
+const prettyName = key => key.split('/')[1].replace(/_/g, ' ');
+
+// UI del modo plantilla
+function buildLookUI() {
+  $('lookColors').innerHTML = '';
+  for (const [key, label] of LOOK_SLOTS) {
+    const item = document.createElement('label');
+    item.className = 'color-item';
+    item.innerHTML = `<input type="color" value="${look[key]}"><span>${label}</span>`;
+    item.querySelector('input').oninput = e => { look[key] = e.target.value; scheduleTemplate(); };
+    $('lookColors').appendChild(item);
+  }
+}
+let tplTimer = 0;
+function scheduleTemplate() { clearTimeout(tplTimer); tplTimer = setTimeout(buildTemplateCharacter, 40); }
+function applyPhotoColors() {
+  if (!photoColors) return;
+  look = { ...look, ...photoColors };
+  buildLookUI();
+  if (mode === 'plantilla') scheduleTemplate();
+}
+$('fromPhoto').onclick = applyPhotoColors;
+
+function buildWardrobeUI() {
+  const box = $('wardrobe'); box.innerHTML = '';
+  for (const [key, cat] of Object.entries(WARDROBE)) {
+    const f = document.createElement('div'); f.className = 'field';
+    f.innerHTML = `<label>${cat.label}</label>`;
+    const sel = document.createElement('select');
+    cat.options.forEach(([v, l]) => sel.add(new Option(l, v)));
+    sel.value = outfit[key];
+    sel.onchange = () => { outfit[key] = sel.value; scheduleTemplate(); };
+    f.appendChild(sel); box.appendChild(f);
+  }
+  const ex = $('extras'); ex.innerHTML = '';
+  for (const [key, label] of EXTRAS) {
+    const b = document.createElement('button');
+    b.textContent = label; b.classList.toggle('active', !!outfit.extras[key]);
+    b.onclick = () => { outfit.extras[key] = !outfit.extras[key]; b.classList.toggle('active', outfit.extras[key]); scheduleTemplate(); };
+    ex.appendChild(b);
+  }
+}
+$('wardRandom').onclick = () => {
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  for (const [key, cat] of Object.entries(WARDROBE)) outfit[key] = pick(cat.options)[0];
+  outfit.extras = {};
+  for (const [key] of EXTRAS) outfit.extras[key] = Math.random() < 0.35;
+  const h = Math.random() * 360;
+  look.outfit = hslHex(h, 25 + Math.random() * 50, 45 + Math.random() * 40);
+  look.accent = hslHex((h + 120 + Math.random() * 120) % 360, 85, 58);
+  buildWardrobeUI(); buildLookUI(); scheduleTemplate();
+};
+$('wardReset').onclick = () => { outfit = { ...DEFAULT_OUTFIT, extras: {} }; buildWardrobeUI(); scheduleTemplate(); };
+function hslHex(h, s, l) {
+  s /= 100; l /= 100;
+  const f = n => { const k = (n + h / 30) % 12; return l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1)); };
+  return rgbToHex([f(0) * 255, f(8) * 255, f(4) * 255]);
+}
+$('tplOutline').onchange = scheduleTemplate;
+
+for (const [key, kit] of Object.entries(KITS)) $('kit').add(new Option(kit.name, key));
+$('kit').onchange = e => { kitKey = e.target.value; current = 'quieto'; scheduleTemplate(); };
+
+if (HAS_SPRITES) {
+  $('explore').add(new Option('— ninguna —', ''));
+  const groups = {};
+  for (const key of Object.keys(SPRITES)) (groups[key.split('/')[0]] ||= []).push(key);
+  const GROUP_NAMES = {
+    'heroe-movimiento': 'Movimiento', 'heroe-combate': 'Combate', 'heroe-habilidades': 'Habilidades',
+    tirador: 'Tirador', nigromante: 'Nigromante',
+  };
+  for (const [g, keys] of Object.entries(groups)) {
+    const og = document.createElement('optgroup'); og.label = GROUP_NAMES[g] || g;
+    keys.forEach(k => og.appendChild(new Option(prettyName(k), k)));
+    $('explore').appendChild(og);
+  }
+}
+$('explore').onchange = e => {
+  exploreKey = e.target.value;
+  if (!exploreKey && current === 'explorar') current = 'quieto';
+  scheduleTemplate();
+};
+
+// =====================================================================
+// Cambio de modo
+// =====================================================================
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+  $('tplPanel').hidden = m !== 'plantilla';
+  $('wardPanel').hidden = m !== 'plantilla';
+  $('photoPanel').hidden = m !== 'foto';
+  $('modeHint').textContent = m === 'plantilla'
+    ? 'Un personaje con animaciones dibujadas a mano, pintado con los colores de tu foto.'
+    : 'Tu foto convertida en píxeles tal cual, con animaciones simples.';
+  current = 'quieto';
+  character = null;
+  if (m === 'plantilla') { $('empty').hidden = true; buildTemplateCharacter(); }
+  else if (photo) buildPhotoCharacter();
+  else { onCharacterChanged(); showEmpty('Sube una foto para convertirla<br>en un personaje pixel art animado'); }
+}
+document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+if (!HAS_SPRITES) document.querySelector('[data-mode=plantilla]').disabled = true;
+
+function showEmpty(msg) {
+  $('empty').innerHTML = msg;
+  $('empty').hidden = !msg;
+}
+
+// =====================================================================
+// Escenario: el personaje se mueve
+// =====================================================================
+const stage = $('stage'), g = stage.getContext('2d');
+const SW = stage.width, SH = stage.height, FLOOR = SH - 44;
+const hero = { x: SW / 2, face: 1, anim: 'quieto', f: 0, t: 0, oneShot: null, held: null };
+const keys = {};
+let current = 'quieto';
+let runToggle = false;
+let script = null;
+
+function onCharacterChanged() {
+  const ok = !!character;
+  document.querySelectorAll('.exp').forEach(b => b.disabled = !ok || !!script);
+  if (ok) { $('empty').hidden = true; hero.f = 0; hero.t = 0; hero.oneShot = null; hero.held = null; }
+  if (ok && !character.anims[current]) current = 'quieto';
+  buildAnimButtons();
+  drawSheet();
+  const a = character && character.anims;
+  $('keysHint').textContent = 'Teclado: ← → caminar · Shift correr · Espacio saltar · X ' +
+    ((a && a.atacar && a.atacar.name) || 'atacar').toLowerCase() +
+    (a && a.especial ? ' · Z ' + a.especial.name.toLowerCase() : '') + ' · H daño' + (a && a.morir ? ' · M morir' : '');
+}
+
+function buildAnimButtons() {
+  const box = $('animBtns'); box.innerHTML = '';
+  if (!character) return;
+  const keysList = [...character.order, ...(character.anims.explorar ? ['explorar'] : [])];
+  for (const key of keysList) {
+    const a = character.anims[key];
+    const b = document.createElement('button');
+    b.textContent = a.name; b.dataset.anim = key;
+    if (key === current) b.classList.add('active');
+    b.onclick = () => {
+      if (a.once) { trigger(key); return; }
+      current = key; hero.held = null;
+      box.querySelectorAll('button').forEach(o => o.classList.toggle('active', o === b));
+    };
+    box.appendChild(b);
+  }
+}
+
+function trigger(anim) {
+  if (!character || !character.anims[anim] || hero.oneShot) return;
+  hero.held = null;
+  hero.oneShot = anim; hero.anim = anim; hero.f = 0; hero.t = 0;
+}
+
+const KEYMAP = { a: 'ArrowLeft', d: 'ArrowRight', w: ' ', ArrowUp: ' ' };
+const normKey = e => KEYMAP[e.key] || KEYMAP[e.key.toLowerCase()] || (e.key.length === 1 ? e.key.toLowerCase() : e.key);
+window.addEventListener('keydown', e => {
+  if (['INPUT', 'SELECT'].includes(e.target.tagName) && e.target.type !== 'checkbox') return;
+  const k = normKey(e);
+  if (['ArrowLeft', 'ArrowRight', ' '].includes(k)) e.preventDefault();
+  keys[k] = true;
+  if (e.repeat || script) return;
+  const act = { ' ': 'saltar', x: 'atacar', j: 'atacar', z: 'especial', k: 'especial', h: 'danio', m: 'morir' }[k];
+  if (act) trigger(act);
+});
+window.addEventListener('keyup', e => { keys[normKey(e)] = false; });
+window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+
+document.querySelectorAll('[data-key]').forEach(b => {
+  const on = e => { e.preventDefault(); keys[b.dataset.key] = true; };
+  const off = () => { keys[b.dataset.key] = false; };
+  b.addEventListener('pointerdown', on);
+  b.addEventListener('pointerup', off);
+  b.addEventListener('pointerleave', off);
+  b.addEventListener('pointercancel', off);
+});
+$('runBtn').onclick = () => { runToggle = !runToggle; $('runBtn').classList.toggle('active', runToggle); };
+
+function input() {
+  if (script) return script.input;
+  return { left: keys.ArrowLeft, right: keys.ArrowRight, run: keys.Shift || runToggle };
+}
+
+function update(dt) {
+  if (script) runScript(dt);
+  if (!character) return;
+  const speed = +$('speed').value / 100;
+  const inp = input();
+  const dir = (inp.right ? 1 : 0) - (inp.left ? 1 : 0);
+  if (dir && !hero.oneShot) hero.face = dir;
+  if (dir) hero.held = null;
+
+  const want = hero.oneShot || hero.held || (dir ? (inp.run ? 'correr' : 'caminar') : current);
+  const moving = dir && (!hero.oneShot || hero.oneShot === 'saltar');
+  const half = character.FW * character.scale * 0.25;
+  if (moving) hero.x += dir * (inp.run ? 300 : 130) * speed * dt;
+  if (hero.oneShot === 'danio') hero.x -= hero.face * 60 * dt;
+  hero.x = Math.max(half, Math.min(SW - half, hero.x));
+
+  if (want !== hero.anim) { hero.anim = want; hero.f = 0; hero.t = 0; }
+  const a = character.anims[hero.anim];
+  if (!a) { hero.anim = 'quieto'; return; }
+  if (hero.held) return;   // se queda en el último cuadro (p. ej. muerto)
+  hero.t += dt;
+  const step = 1 / (a.fps * speed);
+  while (hero.t >= step) {
+    hero.t -= step;
+    hero.f++;
+    if (hero.f >= a.frames.length) {
+      if (a.once) {
+        hero.f = a.frames.length - 1;
+        if (a.hold) hero.held = hero.oneShot;
+        hero.oneShot = null;
+        break;
+      }
+      hero.f = 0;
+    }
+  }
+}
+
+const starList = Array.from({ length: 110 }, () => ({
+  x: Math.random() * SW, y: Math.random() * (FLOOR - 10),
+  v: 8 + Math.random() * 60, s: Math.random() < .2 ? 3 : 2,
+}));
+const planet = { x: SW * 0.78, y: 90, r: 46 };
+
+function draw(dt) {
+  const bg = g.createLinearGradient(0, 0, 0, SH);
+  bg.addColorStop(0, '#1b2050'); bg.addColorStop(1, '#0b0d1a');
+  g.fillStyle = bg; g.fillRect(0, 0, SW, SH);
+  g.fillStyle = '#ff5ca8'; g.beginPath(); g.arc(planet.x, planet.y, planet.r, 0, 7); g.fill();
+  g.fillStyle = '#c23f82'; g.beginPath(); g.arc(planet.x + 14, planet.y + 10, planet.r - 8, 0, 7); g.fill();
+  g.strokeStyle = '#ffd1e6'; g.lineWidth = 4;
+  g.beginPath(); g.ellipse(planet.x, planet.y, planet.r * 1.7, 10, -0.3, 0, 7); g.stroke();
+  const drift = hero.anim === 'correr' ? 4 : hero.anim === 'caminar' ? 2 : 1;
+  for (const s of starList) {
+    s.x -= s.v * dt * drift * hero.face;
+    if (s.x < 0) s.x += SW; if (s.x > SW) s.x -= SW;
+    g.fillStyle = `rgba(255,255,255,${.35 + s.v / 120})`;
+    g.fillRect(s.x | 0, s.y | 0, s.s, s.s);
+  }
+  g.fillStyle = '#12152b'; g.fillRect(0, FLOOR, SW, SH - FLOOR);
+  g.fillStyle = '#2c3366'; g.fillRect(0, FLOOR, SW, 4);
+  g.fillStyle = '#191d3c';
+  for (let x = 0; x < SW; x += 48) g.fillRect(x, FLOOR + 4, 2, SH - FLOOR);
+
+  const a = character && character.anims[hero.anim];
+  if (a) {
+    const sc = character.scale;
+    const w = character.FW * sc, h = character.FH * sc;
+    g.fillStyle = 'rgba(0,0,0,.45)';
+    g.beginPath(); g.ellipse(hero.x, FLOOR + 2, Math.min(70, w * 0.18), 7, 0, 0, 7); g.fill();
+    g.save();
+    g.translate(Math.round(hero.x), FLOOR + 2);
+    g.scale(hero.face, 1);
+    g.imageSmoothingEnabled = false;
+    g.drawImage(a.frames[Math.min(hero.f, a.frames.length - 1)], -w / 2, -h, w, h);
+    g.restore();
+  }
+  g.fillStyle = 'rgba(92,242,255,.85)';
+  g.font = 'bold 18px "Courier New", monospace';
+  g.fillText('PIXEL SPACEFIGHTER', 16, 30);
+  if (script) {
+    g.fillStyle = '#ff4d4d'; g.beginPath(); g.arc(SW - 28, 24, 8, 0, 7); g.fill();
+    g.fillText('REC', SW - 80, 30);
+  }
+}
+
+let lastT = performance.now();
+function loop(t) {
+  const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
+  update(dt); draw(dt);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// =====================================================================
+// Grabar video: demo automática
+// =====================================================================
+function demoSteps() {
+  const has = k => character.anims[k];
+  const steps = [
+    { d: 1.2, in: {} },
+    { d: 2.0, in: { right: 1 } },
+    { d: 1.0, in: { right: 1 }, act: 'saltar' },
+    { d: 0.5, in: {} },
+    { d: 1.8, in: { left: 1, run: 1 } },
+    { d: 1.0, in: {}, act: 'atacar' },
+    { d: 0.4, in: {} },
+  ];
+  if (has('especial')) steps.push({ d: 1.4, in: {}, act: 'especial' }, { d: 0.4, in: {} });
+  steps.push({ d: 1.4, in: { right: 1 } }, { d: 0.8, in: {}, act: 'danio' });
+  if (has('morir')) steps.push({ d: 2.2, in: {}, act: 'morir' });
+  else steps.push({ d: 1.0, in: {} });
+  return steps;
+}
+function runScript(dt) {
+  script.t += dt;
+  while (script.i < script.steps.length && script.t >= script.steps[script.i].d) {
+    script.t -= script.steps[script.i].d; script.i++;
+    if (script.i < script.steps.length) startStep();
+  }
+  if (script.i >= script.steps.length) { const done = script.done; script = null; done(); }
+}
+function startStep() {
+  const s = script.steps[script.i];
+  script.input = { left: !!s.in.left, right: !!s.in.right, run: !!s.in.run };
+  if (s.act) { hero.oneShot = null; hero.held = null; trigger(s.act); }
+}
+
+$('recBtn').onclick = () => {
+  if (!character || script) return;
+  if (!window.MediaRecorder || !stage.captureStream) {
+    $('recStatus').textContent = 'Tu navegador no puede grabar video. Prueba con Chrome o Edge.'; return;
+  }
+  const type = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
+    .find(t => MediaRecorder.isTypeSupported(t));
+  const rec = new MediaRecorder(stage.captureStream(30), type ? { mimeType: type, videoBitsPerSecond: 5e6 } : {});
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    const blob = new Blob(chunks, { type: rec.mimeType || 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const ext = (rec.mimeType || '').includes('mp4') ? 'mp4' : 'webm';
+    $('video').src = url; $('videoBox').hidden = false; $('video').play().catch(() => {});
+    $('videoDl').href = url; $('videoDl').download = 'personaje_animado.' + ext;
+    $('recStatus').textContent = '¡Listo! Aquí abajo está tu video.';
+    document.querySelectorAll('.exp').forEach(b => b.disabled = !character);
+    hero.held = null;
+  };
+  hero.x = 220; hero.face = 1; hero.oneShot = null; hero.held = null; current = 'quieto';
+  buildAnimButtons();
+  const steps = demoSteps();
+  script = { steps, i: 0, t: 0, input: {}, done: () => setTimeout(() => rec.stop(), 150) };
+  startStep();
+  rec.start();
+  document.querySelectorAll('.exp').forEach(b => b.disabled = true);
+  const secs = Math.round(steps.reduce((s, x) => s + x.d, 0));
+  $('recStatus').textContent = `Grabando la demo… (unos ${secs} segundos, no cambies de pestaña)`;
+};
+
+// =====================================================================
+// Hoja de sprites y exportar
+// =====================================================================
+function sheetCanvas(scale) {
+  const { anims, order, FW, FH } = character;
+  const cols = Math.max(...order.map(k => anims[k].frames.length));
+  const out = document.createElement('canvas');
+  out.width = FW * cols * scale; out.height = FH * order.length * scale;
+  const o = out.getContext('2d'); o.imageSmoothingEnabled = false;
+  order.forEach((k, r) => anims[k].frames.forEach((f, c) => o.drawImage(f, c * FW * scale, r * FH * scale, FW * scale, FH * scale)));
+  return out;
+}
+function drawSheet() {
+  const sh = $('sheet');
+  if (!character) { sh.width = 1; sh.height = 1; return; }
+  const s = sheetCanvas(1);
+  sh.width = s.width; sh.height = s.height;
+  sh.getContext('2d').drawImage(s, 0, 0);
+  sh.style.width = Math.min(s.width * Math.max(1, Math.floor(560 / s.width)), 900) + 'px';
+}
+function download(name, href) { const a = document.createElement('a'); a.download = name; a.href = href; a.click(); }
+$('expSheet').onclick = () => download('personaje_sprites.png', sheetCanvas(+$('scale').value).toDataURL('image/png'));
+$('expJson').onclick = () => {
+  const s = +$('scale').value;
+  const meta = {
+    imagen: 'personaje_sprites.png', escala: s,
+    anchoCuadro: character.FW * s, altoCuadro: character.FH * s,
+    animaciones: character.order.map((k, fila) => {
+      const a = character.anims[k];
+      return { nombre: k, titulo: a.name, fila, cuadros: a.frames.length, fps: a.fps, repetir: !a.once };
+    }),
+  };
+  download('personaje_sprites.json', URL.createObjectURL(new Blob([JSON.stringify(meta, null, 2)], { type: 'application/json' })));
+};
+
+// =====================================================================
+// Controles del modo foto
+// =====================================================================
+function labels() {
+  $('colorsV').textContent = $('colors').value;
+  $('vividV').textContent = $('vivid').value + '%';
+  $('tolV').textContent = $('tol').value;
+  $('speedV').textContent = $('speed').value + '%';
+  $('tol').disabled = !$('removeBg').checked;
+}
+let pending = 0;
+function changed() { labels(); clearTimeout(pending); pending = setTimeout(processPhoto, 60); }
+['size', 'colors', 'vivid', 'tol', 'removeBg', 'outline'].forEach(id => $(id).addEventListener('input', changed));
+$('speed').oninput = labels;
+labels();
+
+buildLookUI();
+buildWardrobeUI();
+setMode(mode);
+</script>
+</body>
+</html>

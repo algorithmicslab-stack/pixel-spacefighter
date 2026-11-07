@@ -1,0 +1,10 @@
+Fondos espaciales descargados de OpenGameArt.org (todos CC0 / dominio público:
+se pueden usar, modificar y vender sin pedir permiso ni dar crédito).
+
+parallax-capas/   "Space Background" de Luis Zuno (@ansimuz)
+                  https://opengameart.org/content/space-background-3
+                  (incluye license.txt original)
+parallax-largo/   "Space Parallax Background"
+                  https://opengameart.org/content/space-parallax-background
+nebulosas/        "Seamless Space Backgrounds" de Screaming Brain Studios
+                  https://opengameart.org/content/seamless-space-backgrounds

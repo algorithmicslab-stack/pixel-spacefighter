@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Spacefighter · Creador</title>
+<style>
+  :root {
+    --bg: #0b0d1a;
+    --panel: #151932;
+    --panel-2: #1d2244;
+    --line: #2c3366;
+    --text: #e8ebff;
+    --muted: #8a92c9;
+    --accent: #5cf2ff;
+    --accent-2: #ff5ca8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+  }
+  header h1 {
+    margin: 0; font-size: 18px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: "Courier New", monospace;
+  }
+  header h1 span { color: var(--accent); }
+  header { flex-wrap: wrap; }
+  nav { display: flex; gap: 8px; margin-left: auto; }
+  nav a {
+    color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  nav a.on { color: var(--accent); border-color: var(--accent); }
+  main {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr) 260px;
+    gap: 16px; padding: 16px; max-width: 1200px; margin: 0 auto;
+  }
+  @media (max-width: 960px) {
+    main { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 14px;
+  }
+  .panel h2 {
+    margin: 0 0 10px; font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+  }
+  .panel + .panel { margin-top: 16px; }
+  .part-row {
+    display: grid; grid-template-columns: 32px 1fr 32px; align-items: center;
+    gap: 6px; margin-bottom: 10px;
+  }
+  .part-row .label { font-size: 11px; color: var(--muted); grid-column: 1 / -1; margin-bottom: -4px; }
+  .part-row .value {
+    text-align: center; background: var(--panel-2); border-radius: 6px; padding: 6px 4px;
+    font-weight: 600;
+  }
+  .part-row.disabled .value { opacity: .4; }
+  button {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #06121a; border-color: var(--accent); font-weight: 700; }
+  button.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); color: var(--accent); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .color-item {
+    display: flex; align-items: center; gap: 8px; background: var(--panel-2);
+    border-radius: 6px; padding: 4px 8px;
+  }
+  .color-item input { width: 28px; height: 28px; border: none; padding: 0; background: none; cursor: pointer; }
+  .color-item span { font-size: 12px; }
+  .center { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #editor {
+    width: 100%; max-width: 512px; aspect-ratio: 1; image-rendering: pixelated;
+    border: 1px solid var(--line); border-radius: 6px; cursor: crosshair; touch-action: none;
+  }
+  .stage {
+    width: 100%; max-width: 512px; height: 210px; border-radius: 10px; overflow: hidden;
+    position: relative; border: 1px solid var(--line);
+    background: radial-gradient(ellipse at 30% 20%, #23285a 0%, #0b0d1a 70%);
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 18px;
+  }
+  .stage::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 22px;
+    background: repeating-linear-gradient(90deg, #262c5c 0 8px, #20254f 8px 16px);
+    border-top: 2px solid #3a428a;
+  }
+  #stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #preview {
+    width: 128px; height: 128px; image-rendering: pixelated; position: relative; z-index: 1;
+  }
+  .pilot-name {
+    position: absolute; top: 8px; left: 12px; font-family: "Courier New", monospace;
+    color: var(--accent); font-size: 13px; letter-spacing: 1px;
+  }
+  .anims { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 512px; }
+  .bg-pick { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .bg-pick select { width: auto; }
+  input[type=text], select {
+    width: 100%; background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 7px 8px; font: inherit;
+  }
+  label.check { display: flex; align-items: center; gap: 8px; margin-top: 10px; cursor: pointer; }
+  .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+  .paint-color { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .paint-color input { width: 36px; height: 30px; border: none; background: none; padding: 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pixel <span>Spacefighter</span> · Creador de pilotos</h1>
+  <nav>
+    <a href="index.html" class="on">Creador de pilotos</a>
+    <a href="foto.html">Foto → Pixel art</a>
+    <a href="referencias.html">Referencias</a>
+    <a href="juego.html">🎮 Jugar</a>
+  </nav>
+</header>
+
+<main>
+  <!-- Partes -->
+  <section>
+    <div class="panel">
+      <h2>Piloto</h2>
+      <input type="text" id="name" maxlength="20" value="Piloto-01">
+    </div>
+    <div class="panel">
+      <h2>Partes</h2>
+      <div id="parts"></div>
+      <div class="row" style="margin-top:6px">
+        <button class="primary" id="random">🎲 Aleatorio</button>
+        <button id="reset">Reiniciar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Editor -->
+  <section class="center">
+    <div class="stage">
+      <canvas id="stars"></canvas>
+      <canvas id="preview" width="32" height="32"></canvas>
+      <div class="pilot-name" id="pilotLabel"></div>
+    </div>
+    <div class="anims" id="animBtns"></div>
+    <label class="bg-pick">Fondo <select id="bg"></select></label>
+    <canvas id="editor" width="512" height="512"></canvas>
+  </section>
+
+  <!-- Colores y herramientas -->
+  <section>
+    <div class="panel">
+      <h2>Colores</h2>
+      <div class="color-grid" id="colors"></div>
+      <label class="check"><input type="checkbox" id="outline" checked> Contorno automático</label>
+    </div>
+    <div class="panel">
+      <h2>Retoque a mano</h2>
+      <div class="row">
+        <button data-tool="pencil" class="active">✏️ Lápiz</button>
+        <button data-tool="eraser">🧽 Borrar</button>
+        <button data-tool="picker">💧 Gotero</button>
+      </div>
+      <div class="paint-color">
+        <input type="color" id="paint" value="#ffffff"><span>Color del lápiz</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="undo">↶ Deshacer</button>
+        <button id="clearEdits">Quitar retoques</button>
+      </div>
+      <p class="hint">Los retoques se pintan encima de las partes (solo en el editor de frente). Ctrl+Z para deshacer.</p>
+    </div>
+    <div class="panel">
+      <h2>Exportar</h2>
+      <select id="scale">
+        <option value="1">32×32 (1x)</option>
+        <option value="4">128×128 (4x)</option>
+        <option value="8" selected>256×256 (8x)</option>
+        <option value="16">512×512 (16x)</option>
+      </select>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="exportPng">Descargar PNG</button>
+        <button id="exportJson">Guardar .json</button>
+        <button id="importJson">Abrir .json</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="exportSheet">Hoja de sprites (PNG + .json)</button>
+      </div>
+      <p class="hint">Una fila por animación, cuadros de 32×40 (8 px arriba para el salto).</p>
+      <input type="file" id="fileIn" accept=".json" hidden>
+    </div>
+  </section>
+</main>
+
+<script src="assets/fondos.js"></script>
+<script>
+const W = 32, H = 32;
+
+// ---------- Colores ----------
+const COLOR_SLOTS = [
+  ['helmet', 'Casco'], ['visor', 'Visor'], ['suit', 'Traje'], ['accent', 'Detalle'],
+  ['skin', 'Piel'], ['boot', 'Botas/Guantes'], ['metal', 'Metal'], ['outline', 'Contorno'],
+];
+const DEFAULT_COLORS = {
+  helmet: '#e9ecf5', visor: '#3fd8ff', suit: '#3b5bdb', accent: '#ff5c5c',
+  skin: '#f1c27d', boot: '#2b2f45', metal: '#9aa3b8', outline: '#0d0f1c',
+};
+const FIXED = { fire: '#ff8a1f', fire2: '#ffe14d', eye: '#1b1b2a' };
+
+function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function rgbToHex(r, g, b) { return '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join(''); }
+function mix(hex, target, t) {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToHex(r + (target - r) * t, g + (target - g) * t, b + (target - b) * t);
+}
+function resolve(key) {
+  if (FIXED[key]) return FIXED[key];
+  const [base, v] = key.split('-');
+  const c = state.colors[base];
+  if (v === 'd') return mix(c, 0, 0.32);
+  if (v === 'l') return mix(c, 255, 0.4);
+  return c;
+}
+
+// ---------- Primitivas de dibujo ----------
+let grid;
+let OX = 0, OY = 0; // desplazamiento actual (para mover partes del cuerpo en las poses)
+let onlyOver = false; // pintar solo encima de lo ya dibujado (contorno interno)
+function px(x, y, c) {
+  x += OX; y += OY;
+  if (x >= 0 && x < W && y >= 0 && y < H && (!onlyOver || grid[y * W + x])) grid[y * W + x] = c;
+}
+function at(dx, dy, fn) { const a = OX, b = OY; OX += dx; OY += dy; fn(); OX = a; OY = b; }
+function rect(x, y, w, h, c) { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) px(x + i, y + j, c); }
+function sym(x, y, w, h, c) { rect(x, y, w, h, c); rect(W - x - w, y, w, h, c); }
+
+// ---------- Partes ----------
+function helmetBase() {
+  rect(12, 4, 8, 1, 'helmet');
+  rect(11, 5, 10, 8, 'helmet');
+  rect(12, 13, 8, 1, 'helmet');
+  rect(19, 5, 2, 8, 'helmet-d');
+  rect(13, 5, 3, 1, 'helmet-l');
+}
+
+const PARTS = {
+  back: { label: 'Espalda', options: [
+    { name: 'Nada', draw() {} },
+    { name: 'Jetpack', draw() {
+      sym(6, 13, 3, 8, 'metal'); sym(6, 13, 3, 1, 'metal-l'); sym(6, 21, 3, 1, 'metal-d');
+      sym(6, 22, 3, 1, 'fire'); sym(7, 23, 1, 2, 'fire2');
+    }},
+    { name: 'Alas', draw() {
+      for (let r = 0; r < 6; r++) sym(7 - r, 11 + r, r + 1, 1, 'accent');
+      sym(2, 17, 6, 1, 'accent-d'); sym(4, 15, 3, 1, 'accent-l');
+    }},
+    { name: 'Capa', draw() {
+      rect(10, 14, 12, 13, 'accent-d'); sym(9, 23, 2, 4, 'accent-d');
+    }},
+  ]},
+  torso: { label: 'Traje', options: [
+    { name: 'Estándar', draw() {
+      rect(11, 14, 10, 9, 'suit'); rect(19, 14, 2, 9, 'suit-d'); rect(13, 14, 6, 1, 'suit-d');
+      rect(14, 16, 4, 3, 'accent'); rect(15, 17, 2, 1, 'accent-l');
+      rect(11, 21, 10, 1, 'metal'); rect(15, 21, 2, 1, 'accent');
+    }},
+    { name: 'Blindado', draw() {
+      rect(11, 14, 10, 9, 'suit'); rect(19, 14, 2, 9, 'suit-d');
+      rect(13, 15, 6, 5, 'metal'); rect(14, 16, 4, 3, 'metal-l'); rect(15, 17, 2, 1, 'accent');
+      sym(8, 13, 4, 3, 'accent'); sym(8, 13, 4, 1, 'accent-l');
+      rect(11, 21, 10, 1, 'metal-d');
+    }},
+    { name: 'Táctico', draw() {
+      rect(11, 14, 10, 9, 'suit'); rect(19, 14, 2, 9, 'suit-d');
+      for (let i = 0; i < 7; i++) px(12 + i, 15 + i, 'accent');
+      rect(17, 18, 2, 2, 'metal'); rect(12, 19, 2, 2, 'metal');
+      rect(11, 22, 10, 1, 'suit-d');
+    }},
+  ]},
+  helmet: { label: 'Casco', options: [
+    { name: 'Clásico', draw: helmetBase },
+    { name: 'Antena', draw() { helmetBase(); rect(18, 2, 1, 2, 'metal'); px(18, 1, 'accent'); } },
+    { name: 'Cresta', draw() { helmetBase(); rect(15, 1, 2, 3, 'accent'); rect(15, 1, 2, 1, 'accent-l'); } },
+    { name: 'Cuernos', draw() { helmetBase(); sym(10, 3, 1, 3, 'accent'); sym(9, 1, 1, 3, 'accent-l'); } },
+    { name: 'Abierto', open: true, draw() {
+      helmetBase();
+      rect(13, 7, 6, 5, 'skin'); rect(18, 7, 1, 5, 'skin-d');
+      px(14, 9, 'eye'); px(17, 9, 'eye'); rect(15, 11, 2, 1, 'skin-d');
+      rect(13, 6, 6, 1, 'visor'); px(14, 6, 'visor-l');
+    }},
+  ]},
+  visor: { label: 'Visor', options: [
+    { name: 'Completo', draw() { rect(12, 7, 8, 4, 'visor'); rect(12, 10, 8, 1, 'visor-d'); rect(13, 8, 2, 1, 'visor-l'); } },
+    { name: 'Ranura', draw() { rect(12, 8, 8, 2, 'visor'); px(13, 8, 'visor-l'); } },
+    { name: 'Ojos', draw() { sym(13, 8, 2, 2, 'visor'); px(13, 8, 'visor-l'); px(17, 8, 'visor-l'); } },
+    { name: 'Cíclope', draw() { rect(14, 7, 4, 4, 'visor'); rect(14, 10, 4, 1, 'visor-d'); px(15, 8, 'visor-l'); } },
+  ]},
+  weapon: { label: 'Arma', options: [
+    { name: 'Nada', draw() {} },
+    { name: 'Bláster', draw() {
+      rect(22, 20, 5, 2, 'metal'); rect(27, 20, 2, 1, 'metal-d'); rect(23, 22, 1, 1, 'metal-d'); px(25, 20, 'accent');
+    }},
+    { name: 'Espada láser', draw() {
+      rect(22, 7, 1, 13, 'accent-l'); rect(22, 20, 1, 3, 'metal'); px(22, 20, 'metal-d');
+    }},
+    { name: 'Escudo', draw() {
+      rect(5, 16, 5, 7, 'metal'); rect(5, 16, 5, 1, 'metal-l'); rect(6, 23, 3, 1, 'metal');
+      rect(6, 18, 3, 3, 'accent'); px(7, 19, 'accent-l');
+    }},
+  ]},
+};
+const UI_ORDER = ['helmet', 'visor', 'torso', 'back', 'weapon'];
+
+// ---------- Poses ----------
+// crouch: agacharse (baja el torso y acorta las piernas) · lean: ladear el torso
+// jy: altura del salto (no mueve píxeles, se aplica al dibujar el cuadro)
+// legs[i]: { lift: levantar el pie, dx: abrir hacia afuera } · i = 0 izquierda, 1 derecha
+// arms[i]: { mode: 'down' | 'up' | 'out', sw: subir la mano (down), g: mover la mano (up) }
+const POSE0 = { crouch: 0, lean: 0, jy: 0,
+  legs: [{ lift: 0, dx: 0 }, { lift: 0, dx: 0 }],
+  arms: [{ mode: 'down', sw: 0 }, { mode: 'down', sw: 0 }] };
+
+function drawLegs(p) {
+  const top = 23 + p.crouch;
+  rect(12, top, 8, 2, 'suit');
+  [0, 1].forEach(s => {
+    const L = { lift: 0, dx: 0, ...p.legs[s] };
+    const x = s ? 17 + L.dx : 12 - L.dx;
+    const bootY = 28 - L.lift;
+    const h = Math.max(0, bootY - top);
+    rect(x, top, 3, h, 'suit');
+    if (s) rect(x + 2, top, 1, h, 'suit-d'); else rect(x + 2, top + 2, 1, Math.max(0, h - 2), 'suit-d');
+    const bx = s ? x : x - 1;
+    rect(bx, bootY, 4, 3, 'boot'); rect(bx, bootY, 4, 1, 'boot-l');
+  });
+}
+
+function drawArms(p) {
+  [0, 1].forEach(s => {
+    const A = { mode: 'down', sw: 0, g: 0, ...p.arms[s] };
+    const x = s ? 21 : 8;
+    if (A.mode === 'up') {
+      rect(x, 9, 3, 6, 'suit'); if (s) rect(23, 9, 1, 6, 'suit-d');
+      rect(x + (s ? A.g : -A.g), 7, 3, 2, 'boot');
+    } else if (A.mode === 'out') {
+      if (s) { rect(21, 15, 6, 3, 'suit'); rect(21, 17, 6, 1, 'suit-d'); rect(27, 15, 2, 3, 'boot'); }
+      else { rect(5, 15, 6, 3, 'suit'); rect(5, 17, 6, 1, 'suit-d'); rect(3, 15, 2, 3, 'boot'); }
+    } else {
+      rect(x, 15, 3, 6 - A.sw, 'suit'); if (s) rect(23, 15, 1, 6 - A.sw, 'suit-d');
+      rect(x, 21 - A.sw, 3, 2, 'boot');
+    }
+  });
+}
+
+// El arma sigue a la mano que la sostiene (escudo: izquierda, lo demás: derecha)
+function weaponOffset(p) {
+  const s = PARTS.weapon.options[state.parts.weapon].name === 'Escudo' ? 0 : 1;
+  const A = { mode: 'down', sw: 0, g: 0, ...p.arms[s] };
+  const dir = s ? 1 : -1;
+  if (A.mode === 'up') return [dir * A.g, -14];
+  if (A.mode === 'out') return [dir * 5, -5];
+  return [0, -A.sw];
+}
+
+// ---------- Animaciones de perfil (esqueleto) ----------
+// Como en las referencias (OpenGameArt Runner/Template, CraftPix), las animaciones van
+// de perfil y con articulaciones: cada cuadro da ángulos de cadera/rodilla y hombro/codo.
+// Ángulos en grados: 0 = colgando hacia abajo, positivo = hacia adelante (derecha).
+// legs/arms: [cercano, lejano] · [muslo, rodilla] / [hombro, codo]
+// breathe: baja el torso · lean: inclina el torso al frente · jy: altura (salto)
+// air: no apoyar los pies en el piso · flip: mirar a la izquierda · cape: vuelo de la capa
+const rad = d => d * Math.PI / 180;
+const THIGH = 4, SHIN = 4, UPPER = 3.5, FORE = 3.5;
+const HIP = { x: 16, y: 21 }; // con la pierna recta el tobillo queda en y = 29
+
+function line(x0, y0, x1, y1, w, c) {
+  const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) * 3) + 1, off = (w - 1) >> 1;
+  for (let i = 0; i < n; i++) {
+    const t = n > 1 ? i / (n - 1) : 0;
+    const cx = Math.round(x0 + (x1 - x0) * t), cy = Math.round(y0 + (y1 - y0) * t);
+    rect(cx - off, cy - off, w, w, c);
+  }
+}
+// devuelve la articulación media (rodilla/codo) y el extremo (tobillo/mano)
+function joints(x, y, a1, l1, bend, l2) {
+  const kx = x + Math.sin(rad(a1)) * l1, ky = y + Math.cos(rad(a1)) * l1;
+  const a2 = a1 + bend;
+  return { kx, ky, ex: kx + Math.sin(rad(a2)) * l2, ey: ky + Math.cos(rad(a2)) * l2 };
+}
+const legJ = (hx, [t, k]) => joints(hx, HIP.y, t, THIGH, -k, SHIN);
+const armJ = (sx, sy, [s, e]) => joints(sx, sy, s, UPPER, e, FORE);
+
+function drawLeg(hx, leg, far) {
+  const j = legJ(hx, leg), c = far ? 'suit-d' : 'suit';
+  line(hx, HIP.y, j.kx, j.ky, 3, c); line(j.kx, j.ky, j.ex, j.ey, 3, c);
+  const bx = Math.round(j.ex) - 1, by = Math.round(j.ey);
+  rect(bx, by, 4, 2, far ? 'boot-d' : 'boot');
+  if (!far) rect(bx, by, 3, 1, 'boot-l');
+}
+function drawArm(sx, sy, arm, far) {
+  const j = armJ(sx, sy, arm);
+  // el brazo cercano lleva contorno propio cuando pasa por encima del cuerpo o el casco
+  if (!far && state.outline) {
+    onlyOver = true;
+    line(sx, sy, j.kx, j.ky, 4, 'outline'); line(j.kx, j.ky, j.ex, j.ey, 4, 'outline');
+    rect(Math.round(j.ex) - 2, Math.round(j.ey) - 2, 4, 4, 'outline');
+    onlyOver = false;
+  }
+  line(sx, sy, j.kx, j.ky, 2, far ? 'suit-d' : 'suit'); line(j.kx, j.ky, j.ex, j.ey, 2, far ? 'suit-d' : 'suit');
+  rect(Math.round(j.ex) - 1, Math.round(j.ey) - 1, 2, 2, far ? 'boot-d' : 'boot');
+  return { hx: Math.round(j.ex), hy: Math.round(j.ey) };
+}
+
+// Partes vistas de perfil (mirando a la derecha). Mismo orden que las opciones de PARTS.
+function sideHelmetBase() {
+  rect(13, 4, 7, 1, 'helmet'); rect(12, 5, 9, 8, 'helmet'); rect(13, 13, 7, 1, 'helmet');
+  rect(12, 5, 2, 8, 'helmet-d'); rect(15, 5, 4, 1, 'helmet-l');
+}
+const SIDE = {
+  helmet: [
+    sideHelmetBase,
+    () => { sideHelmetBase(); rect(14, 2, 1, 2, 'metal'); px(14, 1, 'accent'); },
+    () => { sideHelmetBase(); rect(12, 2, 6, 2, 'accent'); rect(13, 2, 5, 1, 'accent-l'); },
+    () => { sideHelmetBase(); px(19, 3, 'accent'); px(20, 2, 'accent-l'); px(20, 1, 'accent-l'); px(13, 3, 'accent-d'); px(12, 2, 'accent-d'); },
+    () => { sideHelmetBase();
+      rect(17, 6, 4, 6, 'skin'); px(19, 8, 'eye'); px(20, 10, 'skin-d'); rect(17, 6, 4, 1, 'visor'); },
+  ],
+  visor: [
+    () => { rect(17, 7, 4, 4, 'visor'); rect(17, 10, 4, 1, 'visor-d'); px(19, 8, 'visor-l'); },
+    () => { rect(17, 8, 4, 2, 'visor'); px(19, 8, 'visor-l'); },
+    () => { rect(18, 8, 2, 2, 'visor'); px(18, 8, 'visor-l'); },
+    () => { rect(18, 7, 3, 4, 'visor'); rect(18, 10, 3, 1, 'visor-d'); px(19, 8, 'visor-l'); },
+  ],
+  torso: [
+    () => { rect(18, 16, 2, 2, 'accent'); rect(13, 21, 7, 1, 'metal'); px(18, 21, 'accent'); },
+    () => { rect(16, 15, 4, 5, 'metal'); rect(17, 16, 2, 3, 'metal-l'); px(18, 17, 'accent'); rect(13, 21, 7, 1, 'metal-d'); },
+    () => { for (let i = 0; i < 7; i++) px(13 + i, 15 + i, 'accent'); rect(17, 18, 2, 2, 'metal'); },
+  ],
+  back: [
+    () => {},
+    p => { rect(9, 14, 4, 8, 'metal'); rect(9, 14, 4, 1, 'metal-l'); rect(9, 21, 4, 1, 'metal-d');
+      const f = p.fire; rect(10, 22, 2, 1 + f, 'fire'); px(10 + (f & 1), 23 + f, 'fire2'); },
+    p => { const up = p.wing; for (let r = 0; r < 6; r++) rect(6 + r, 11 + r - up, 7 - r, 1, 'accent');
+      rect(6, 11 - up, 3, 1, 'accent-l'); rect(9, 17 - up, 4, 1, 'accent-d'); },
+    // capa: tela llena entre los hombros y una punta que vuela según la velocidad
+    p => { const tx = 11 - p.cape * 2.2, ty = 26 - Math.max(0, p.cape) * 1.6;
+      for (let i = 0; i <= 8; i++) {
+        const t = i / 8, hx = 13 + (tx - 13) * t, hy = 23 + (ty - 23) * t;
+        line(12, 14, hx, hy, 2, 'accent-d');
+      }
+      line(12, 14, tx, ty, 1, 'accent'); },
+  ],
+  // arma guardada (para bailar con las manos libres), detrás del cuerpo
+  holster: [
+    () => {},
+    () => { rect(12, 19, 2, 3, 'metal'); px(12, 21, 'metal-d'); },
+    () => { line(10, 24, 13, 13, 1, 'accent-l'); rect(12, 14, 3, 1, 'metal'); },
+    () => { rect(10, 14, 2, 8, 'metal'); rect(10, 14, 1, 8, 'metal-l'); px(10, 17, 'accent'); },
+  ],
+  // el arma va en la mano cercana (hx, hy)
+  weapon: [
+    () => {},
+    (hx, hy) => { rect(hx, hy - 1, 5, 2, 'metal'); px(hx + 5, hy - 1, 'metal-d'); px(hx + 2, hy - 1, 'accent'); px(hx, hy + 1, 'metal-d'); },
+    (hx, hy) => { rect(hx, hy - 11, 1, 10, 'accent-l'); rect(hx - 1, hy - 1, 3, 1, 'metal'); px(hx, hy, 'metal-d'); },
+    (hx, hy) => { rect(hx + 1, hy - 4, 2, 8, 'metal'); rect(hx + 2, hy - 4, 1, 8, 'metal-l'); px(hx + 2, hy, 'accent'); },
+  ],
+};
+
+// head: mueve solo la cabeza (va un poco atrasada respecto al cuerpo)
+// hold: el cuadro dura N veces más (acentos del baile) · holster: guardar el arma
+const SIDE0 = { legs: [[4, 4], [-4, 4]], arms: [[-4, 12], [4, 12]],
+  breathe: 0, head: 0, lean: 0, jy: 0, air: false, flip: false, holster: false, cape: 0.6, fire: 0, wing: 0 };
+
+function composeSide(pose) {
+  const p = { ...SIDE0, ...pose };
+  grid = new Array(W * H).fill(null);
+  const parts = state.parts;
+  // apoyar en el piso el pie más bajo (así el cuerpo sube y baja solo al caminar)
+  const lowest = Math.max(...p.legs.map((l, i) => legJ(16 - i, l).ey));
+  const shift = p.air ? 0 : Math.round(29 - lowest);
+  OX = 0; OY = shift;
+  const bx = p.lean, by = p.breathe;
+  const sx = 16 + bx, sy = 15 + by;
+  at(bx, by, () => { SIDE.back[parts.back](p); if (p.holster) SIDE.holster[parts.weapon](); });
+  drawArm(sx - 1, sy, p.arms[1], true);
+  drawLeg(15, p.legs[1], true);
+  drawLeg(16, p.legs[0], false);
+  at(bx, by, () => {
+    rect(13, 14, 7, 8, 'suit'); rect(13, 14, 1, 8, 'suit-d'); rect(19, 15, 1, 6, 'suit-l');
+    SIDE.torso[parts.torso]();
+  });
+  at(bx, by + p.head, () => {
+    SIDE.helmet[parts.helmet]();
+    if (!PARTS.helmet.options[parts.helmet].open) SIDE.visor[parts.visor]();
+  });
+  const hand = drawArm(sx, sy, p.arms[0], false);
+  if (!p.holster) SIDE.weapon[parts.weapon](hand.hx, hand.hy);
+  OX = 0; OY = 0;
+  if (p.flip) for (let y = 0; y < H; y++) {
+    const row = grid.slice(y * W, y * W + W).reverse();
+    for (let x = 0; x < W; x++) grid[y * W + x] = row[x];
+  }
+  return finish(false);
+}
+
+// Ciclos de piernas (muslo, rodilla) en 8 cuadros: contacto, bajada, paso, subida…
+// La otra pierna va 4 cuadros desfasada y cada brazo sigue a la pierna contraria.
+const WALK_LEG = [[24, 4], [16, 18], [4, 8], [-10, 4], [-22, 14], [-16, 36], [6, 62], [22, 32]];
+const RUN_LEG = [[38, 22], [22, 44], [-8, 22], [-34, 28], [-30, 72], [0, 105], [34, 85], [46, 40]];
+const cycle = (table, fn) => table.map((_, i) => fn(table[i], table[(i + 4) % 8], i));
+
+// Baile (20 cuadros, 4 pasos): rebote en las rodillas en cada tiempo,
+// la cabeza llega un cuadro tarde y los cuadros con hold marcan el acento.
+const BEND = [[14, 32], [-8, 30]], STRAIGHT = [[6, 6], [-6, 6]];
+const DANCE = [
+  // 1 · disco: apunta arriba y cruza abajo, con la cadera de lado a lado
+  { legs: BEND, breathe: 1, head: 0, lean: -1, arms: [[150, -5], [-40, 20]], hold: 2 },
+  { legs: STRAIGHT, head: 1, lean: -1, arms: [[145, -15], [-35, 25]] },
+  { legs: BEND, breathe: 1, head: 0, lean: 1, arms: [[30, 70], [-55, 30]], hold: 2 },
+  { legs: STRAIGHT, head: 1, lean: 1, arms: [[20, 80], [-50, 30]] },
+  // 2 · running man: sube una rodilla y desliza la otra pierna atrás
+  { legs: [[75, 105], [-22, 8]], arms: [[-35, 80], [55, 85]], head: -1, cape: 1.4 },
+  { legs: [[18, 20], [-14, 24]], breathe: 1, arms: [[15, 70], [10, 70]], head: 0 },
+  { legs: [[-22, 8], [75, 105]], arms: [[55, 85], [-35, 80]], head: -1, cape: 1.4 },
+  { legs: [[14, 24], [-18, 20]], breathe: 1, arms: [[10, 70], [15, 70]], head: 0 },
+  // 3 · giro con salto: se agacha, gira en el aire y cae con "¡ta-da!"
+  { legs: [[45, 90], [36, 85]], arms: [[-45, 10], [-40, 10]], lean: 1, head: 1 },
+  { legs: [[8, 15], [-4, 12]], arms: [[120, 20], [110, 20]], jy: 4, air: true, flip: true, cape: -1, fire: 2, wing: 2 },
+  { legs: [[30, 60], [18, 65]], arms: [[100, 30], [90, 30]], jy: 3, air: true, cape: 1, fire: 1, wing: 1 },
+  { legs: [[40, 85], [-12, 40]], arms: [[95, -10], [-60, 0]], breathe: 1, head: 1, cape: 2, hold: 3 },
+  // 4 · puño arriba: sube el puño, lo baja al pecho y la cabeza asiente
+  { legs: STRAIGHT, lean: -1, arms: [[165, -10], [-30, 40]], head: -1, wing: 2 },
+  { legs: BEND, breathe: 1, lean: 1, arms: [[70, 100], [-20, 50]], head: 1, hold: 2 },
+  { legs: STRAIGHT, lean: -1, arms: [[165, -10], [-30, 40]], head: -1, wing: 2 },
+  { legs: BEND, breathe: 1, lean: 1, arms: [[70, 100], [-20, 50]], head: 1, hold: 2 },
+  // 5 · patada y pose final
+  { legs: [[80, 0], [-6, 8]], arms: [[-65, 0], [100, 0]], lean: -1, cape: 1.6, hold: 2 },
+  { legs: BEND, breathe: 1, arms: [[60, 40], [50, 40]], head: 1 },
+  { legs: [[30, 60], [20, 70]], arms: [[140, 0], [130, 0]], jy: 3, air: true, cape: -1, wing: 2 },
+  { legs: [[22, 40], [-12, 30]], breathe: 1, arms: [[150, -10], [-45, 10]], head: 0, cape: 1.2, hold: 4 },
+];
+
+const ANIMS = {
+  // respira, la cabeza se mece y la capa ondea
+  quieto: { name: '🧍 Quieto', fps: 6, frames: [0, 0, 0, 1, 1, 1, 1, 0].map((b, i) => ({
+    breathe: b, head: i === 3 || i === 7 ? -b : 0,
+    legs: [[4, 4 + b * 4], [-4, 4 + b * 4]],
+    arms: [[-4 + b * 2, 12 + b * 6], [4 + b * 2, 12 + b * 6]],
+    cape: 0.6 + Math.sin(i / 8 * Math.PI * 2) * 0.3, fire: i % 3 })) },
+  // el codo se dobla más cuando el brazo va adelante; la cabeza rebota con retraso
+  caminar: { name: '🚶 Caminar', fps: 10, move: 0.07, frames: cycle(WALK_LEG, (n, f, i) => ({
+    legs: [n, f], arms: [[f[0] * 0.9, 14 + Math.max(0, f[0])], [n[0] * 0.9, 14 + Math.max(0, n[0])]],
+    head: i % 4 === 2 ? 1 : 0, cape: 2 + (i % 2) * 0.4, fire: i % 3, wing: i % 2 })) },
+  correr: { name: '🏃 Correr', fps: 14, move: 0.17, frames: cycle(RUN_LEG, (n, f, i) => ({
+    legs: [n, f], arms: [[f[0] * 1.1, 70 + Math.max(0, f[0])], [n[0] * 1.1, 70 + Math.max(0, n[0])]], lean: 2,
+    head: i % 4 === 1 ? 1 : 0,
+    air: i % 4 === 3, jy: i % 4 === 3 ? 1 : 0, cape: 4.5 + (i % 2) * 0.5, fire: 2, wing: 1 })) },
+  saltar: { name: '⬆️ Saltar', fps: 12, frames: [
+    { legs: [[40, 85], [32, 80]], arms: [[-50, 10], [-45, 10]], lean: 1, head: 1, hold: 2 },
+    { legs: [[50, 100], [42, 95]], arms: [[-70, 10], [-65, 10]], lean: 1, head: 1 },
+    { legs: [[-5, 0], [-12, 5]], arms: [[135, 10], [125, 10]], jy: 2, head: -1, cape: -1, fire: 2 },
+    { legs: [[10, 20], [0, 30]], arms: [[130, 20], [120, 20]], jy: 6, air: true, head: -1, cape: -1.5, fire: 2 },
+    { legs: [[45, 80], [35, 85]], arms: [[110, 40], [100, 40]], jy: 9, air: true, cape: -0.5, fire: 1 },
+    { legs: [[40, 70], [30, 75]], arms: [[90, 30], [80, 30]], jy: 10, air: true, cape: 0.5, wing: 1, hold: 2 },
+    { legs: [[15, 20], [5, 25]], arms: [[100, 10], [90, 10]], jy: 7, air: true, cape: 2, wing: 2 },
+    { legs: [[10, 10], [0, 15]], arms: [[60, 10], [50, 10]], jy: 3, air: true, head: 1, cape: 2.5, wing: 1 },
+    { legs: [[45, 90], [38, 85]], arms: [[30, 40], [20, 40]], breathe: 1, head: 1, cape: 1.5, hold: 2 },
+    { legs: [[15, 25], [5, 25]], arms: [[10, 20], [0, 20]], cape: 1 },
+    { hold: 3 },
+  ]},
+  bailar: { name: '💃 Bailar', fps: 10, frames: DANCE.map(f => ({ holster: true, ...f })) },
+};
+
+// ---------- Estado ----------
+const DEFAULT_STATE = () => ({
+  name: 'Piloto-01',
+  parts: { helmet: 0, visor: 0, torso: 0, back: 1, weapon: 1 },
+  colors: { ...DEFAULT_COLORS },
+  outline: true,
+  edits: {},
+});
+let state = DEFAULT_STATE();
+try {
+  const saved = JSON.parse(localStorage.getItem('psf-character'));
+  if (saved && saved.parts) state = { ...DEFAULT_STATE(), ...saved };
+} catch (e) {}
+
+let sheetTimer;
+function save() {
+  try { localStorage.setItem('psf-character', JSON.stringify(state)); } catch (e) {}
+  clearTimeout(sheetTimer); sheetTimer = setTimeout(() => saveSheet(), 300);
+}
+
+// ---------- Composición ----------
+function compose(pose = POSE0) {
+  grid = new Array(W * H).fill(null);
+  const p = state.parts;
+  const bx = pose.lean, by = pose.crouch; // el torso se mueve junto
+  at(bx, by, () => PARTS.back.options[p.back].draw());
+  drawLegs(pose);
+  at(bx, by, () => {
+    drawArms(pose);
+    PARTS.torso.options[p.torso].draw();
+    const helmet = PARTS.helmet.options[p.helmet];
+    helmet.draw();
+    if (!helmet.open) { PARTS.visor.options[p.visor].draw(); rect(14, 12, 4, 1, 'helmet-d'); }
+  });
+  const [wx, wy] = weaponOffset(pose);
+  at(bx + wx, by + wy, () => PARTS.weapon.options[p.weapon].draw());
+  return finish(true, bx, by);
+}
+
+// Colores + contorno; los retoques a mano solo aplican a la vista de frente
+function finish(withEdits, bx = 0, by = 0) {
+  const out = grid.map(k => k ? resolve(k) : null);
+  if (state.outline) {
+    const oc = state.colors.outline;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (grid[y * W + x]) continue;
+      const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
+        const nx = x + dx, ny = y + dy;
+        return nx >= 0 && nx < W && ny >= 0 && ny < H && grid[ny * W + nx];
+      });
+      if (n) out[y * W + x] = oc;
+    }
+  }
+  // los retoques de arriba de la cadera se mueven con el torso
+  if (withEdits) for (const [i, c] of Object.entries(state.edits)) {
+    let x = i % W, y = (i / W) | 0;
+    if (y < 23) { x += bx; y += by; }
+    if (x >= 0 && x < W && y >= 0 && y < H) out[y * W + x] = c || null;
+  }
+  return out;
+}
+
+// ---------- Render ----------
+const editor = document.getElementById('editor');
+const ectx = editor.getContext('2d');
+const preview = document.getElementById('preview');
+const pctx = preview.getContext('2d');
+const CELL = editor.width / W;
+let pixels = [];
+
+function render() {
+  pixels = compose();
+  // editor
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    ectx.fillStyle = (x + y) % 2 ? '#1a1e3a' : '#151832';
+    ectx.fillRect(x * CELL, y * CELL, CELL, CELL);
+    const c = pixels[y * W + x];
+    if (c) { ectx.fillStyle = c; ectx.fillRect(x * CELL, y * CELL, CELL, CELL); }
+  }
+  ectx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ectx.lineWidth = 1;
+  ectx.beginPath();
+  for (let i = 1; i < W; i++) {
+    ectx.moveTo(i * CELL + .5, 0); ectx.lineTo(i * CELL + .5, editor.height);
+    ectx.moveTo(0, i * CELL + .5); ectx.lineTo(editor.width, i * CELL + .5);
+  }
+  ectx.stroke();
+  frameCache = {};
+  drawPreview();
+  document.getElementById('pilotLabel').textContent = state.name.toUpperCase();
+  save();
+}
+
+// ---------- Vista animada ----------
+let anim = 'quieto', frame = 0, frameCache = {};
+let lastT = 0, acc = 0, walkX = 0, walkDir = 1;
+function framePixels(key, f) {
+  const id = key + f;
+  const a = ANIMS[key];
+  return frameCache[id] ||= composeSide(a.frames[f]);
+}
+function paint(ctx, px32, ox = 0, oy = 0, s = 1) {
+  px32.forEach((c, i) => { if (c) { ctx.fillStyle = c; ctx.fillRect(ox + (i % W) * s, oy + ((i / W) | 0) * s, s, s); } });
+}
+function drawPreview() {
+  pctx.clearRect(0, 0, W, H);
+  paint(pctx, framePixels(anim, frame));
+  const jy = ANIMS[anim].frames[frame].jy || 0;
+  const scale = preview.clientWidth / W;
+  preview.style.transform = `translate(${walkX}px, ${-jy * scale}px) scaleX(${walkDir})`;
+}
+function animTick(t) {
+  const a = ANIMS[anim];
+  const dt = Math.min(100, t - (lastT || t)); lastT = t;
+  acc += dt;
+  if (acc >= 1000 / a.fps * (a.frames[frame].hold || 1)) { acc = 0; frame = (frame + 1) % a.frames.length; }
+  // de perfil sí avanza: cruza el escenario y se da la vuelta en la orilla
+  if (a.move) {
+    const lim = Math.max(0, (preview.parentElement.clientWidth - preview.clientWidth) / 2 - 8);
+    walkX += walkDir * a.move * dt * (preview.clientWidth / W);
+    if (walkX > lim) { walkX = lim; walkDir = -1; }
+    if (walkX < -lim) { walkX = -lim; walkDir = 1; }
+  }
+  drawPreview();
+  requestAnimationFrame(animTick);
+}
+const animBtns = document.getElementById('animBtns');
+for (const [key, a] of Object.entries(ANIMS)) {
+  const b = document.createElement('button');
+  b.textContent = a.name; b.dataset.anim = key;
+  b.onclick = () => {
+    anim = key; frame = 0; acc = 0;
+    animBtns.querySelectorAll('button').forEach(o => o.classList.toggle('active', o === b));
+  };
+  if (key === anim) b.classList.add('active');
+  animBtns.appendChild(b);
+}
+
+// ---------- UI: partes ----------
+const partsEl = document.getElementById('parts');
+function buildParts() {
+  partsEl.innerHTML = '';
+  for (const key of UI_ORDER) {
+    const cat = PARTS[key];
+    const row = document.createElement('div');
+    row.className = 'part-row';
+    const disabled = key === 'visor' && PARTS.helmet.options[state.parts.helmet].open;
+    if (disabled) row.classList.add('disabled');
+    row.innerHTML = `<div class="label">${cat.label}</div>
+      <button aria-label="Anterior">◀</button>
+      <div class="value">${disabled ? '— (casco abierto)' : cat.options[state.parts[key]].name}</div>
+      <button aria-label="Siguiente">▶</button>`;
+    const [prev, next] = row.querySelectorAll('button');
+    const step = d => {
+      const n = cat.options.length;
+      state.parts[key] = (state.parts[key] + d + n) % n;
+      buildParts(); render();
+    };
+    prev.onclick = () => step(-1);
+    next.onclick = () => step(1);
+    if (disabled) { prev.disabled = next.disabled = true; }
+    partsEl.appendChild(row);
+  }
+}
+
+// ---------- UI: colores ----------
+const colorsEl = document.getElementById('colors');
+function buildColors() {
+  colorsEl.innerHTML = '';
+  for (const [key, label] of COLOR_SLOTS) {
+    const item = document.createElement('label');
+    item.className = 'color-item';
+    item.innerHTML = `<input type="color" value="${state.colors[key]}"><span>${label}</span>`;
+    item.querySelector('input').oninput = e => { state.colors[key] = e.target.value; render(); };
+    colorsEl.appendChild(item);
+  }
+}
+document.getElementById('outline').onchange = e => { state.outline = e.target.checked; render(); };
+
+// ---------- Aleatorio / reiniciar ----------
+function hsl(h, s, l) {
+  s /= 100; l /= 100;
+  const f = n => { const k = (n + h / 30) % 12; return l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1)); };
+  return rgbToHex(f(0) * 255, f(8) * 255, f(4) * 255);
+}
+const rnd = n => Math.floor(Math.random() * n);
+document.getElementById('random').onclick = () => {
+  for (const key of UI_ORDER) state.parts[key] = rnd(PARTS[key].options.length);
+  const h = rnd(360);
+  const skins = ['#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#ffdbac', '#9be37a', '#b7a6ff'];
+  state.colors = {
+    helmet: hsl(h, 20 + rnd(40), 70 + rnd(20)),
+    visor: hsl((h + 180 + rnd(60) - 30) % 360, 85, 60),
+    suit: hsl((h + rnd(40)) % 360, 55 + rnd(30), 35 + rnd(20)),
+    accent: hsl((h + 120 + rnd(120)) % 360, 85, 58),
+    skin: skins[rnd(skins.length)],
+    boot: hsl(h, 15, 15 + rnd(15)),
+    metal: hsl(h, 10, 55 + rnd(20)),
+    outline: '#0d0f1c',
+  };
+  buildParts(); buildColors(); render();
+};
+document.getElementById('reset').onclick = () => {
+  const name = state.name;
+  state = DEFAULT_STATE(); state.name = name;
+  document.getElementById('outline').checked = true;
+  buildParts(); buildColors(); render();
+};
+const nameEl = document.getElementById('name');
+nameEl.value = state.name;
+nameEl.oninput = e => { state.name = e.target.value || 'Piloto'; render(); };
+document.getElementById('outline').checked = state.outline;
+
+// ---------- Retoque a mano ----------
+let tool = 'pencil';
+const paintEl = document.getElementById('paint');
+document.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => {
+  tool = b.dataset.tool;
+  document.querySelectorAll('[data-tool]').forEach(o => o.classList.toggle('active', o === b));
+});
+const history = [];
+function pushHistory() { history.push(JSON.stringify(state.edits)); if (history.length > 50) history.shift(); }
+function undo() { if (history.length) { state.edits = JSON.parse(history.pop()); render(); } }
+document.getElementById('undo').onclick = undo;
+document.getElementById('clearEdits').onclick = () => { pushHistory(); state.edits = {}; render(); };
+window.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); } });
+
+function cellAt(e) {
+  const r = editor.getBoundingClientRect();
+  const x = Math.floor((e.clientX - r.left) / r.width * W);
+  const y = Math.floor((e.clientY - r.top) / r.height * H);
+  return x >= 0 && x < W && y >= 0 && y < H ? y * W + x : -1;
+}
+function apply(i) {
+  if (i < 0) return;
+  if (tool === 'picker') {
+    if (pixels[i]) { paintEl.value = pixels[i]; document.querySelector('[data-tool=pencil]').click(); }
+    return;
+  }
+  const v = tool === 'pencil' ? paintEl.value : '';
+  if (state.edits[i] === v) return;
+  state.edits[i] = v;
+  render();
+}
+let drawing = false;
+editor.addEventListener('pointerdown', e => {
+  if (tool !== 'picker') pushHistory();
+  drawing = true; editor.setPointerCapture(e.pointerId); apply(cellAt(e));
+});
+editor.addEventListener('pointermove', e => { if (drawing && tool !== 'picker') apply(cellAt(e)); });
+editor.addEventListener('pointerup', () => drawing = false);
+editor.addEventListener('contextmenu', e => e.preventDefault());
+
+// ---------- Exportar ----------
+function download(name, href) {
+  const a = document.createElement('a'); a.download = name; a.href = href; a.click();
+}
+const fileName = () => (state.name || 'piloto').replace(/[^\w-]+/g, '_');
+document.getElementById('exportPng').onclick = () => {
+  const s = +document.getElementById('scale').value;
+  const c = document.createElement('canvas'); c.width = W * s; c.height = H * s;
+  const x = c.getContext('2d');
+  pixels.forEach((col, i) => { if (col) { x.fillStyle = col; x.fillRect((i % W) * s, ((i / W) | 0) * s, s, s); } });
+  download(fileName() + '.png', c.toDataURL('image/png'));
+};
+document.getElementById('exportJson').onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  download(fileName() + '.json', URL.createObjectURL(blob));
+};
+// Hoja de sprites: una fila por animación; cuadros de 32×40 con 8 px arriba para el salto
+function buildSheet(s) {
+  const FH = H + 8, keys = Object.keys(ANIMS);
+  const cols = Math.max(...keys.map(k => ANIMS[k].frames.length));
+  const c = document.createElement('canvas'); c.width = cols * W * s; c.height = keys.length * FH * s;
+  const x = c.getContext('2d');
+  const meta = { frameWidth: W * s, frameHeight: FH * s, animations: {} };
+  keys.forEach((k, row) => {
+    ANIMS[k].frames.forEach((f, col) => paint(x, framePixels(k, col), col * W * s, (row * FH + 8 - (f.jy || 0)) * s, s));
+    meta.animations[k] = { row, name: ANIMS[k].name, frames: ANIMS[k].frames.length, fps: ANIMS[k].fps,
+      durations: ANIMS[k].frames.map(f => Math.round(1000 / ANIMS[k].fps * (f.hold || 1))),
+      jy: ANIMS[k].frames.map(f => f.jy || 0) };
+  });
+  return { canvas: c, meta };
+}
+// referencias.html lee esta hoja para comparar al piloto con otros sprites
+function saveSheet() {
+  try {
+    const { canvas, meta } = buildSheet(1);
+    localStorage.setItem('psf-sheet', JSON.stringify({ name: state.name, src: canvas.toDataURL('image/png'), ...meta }));
+  } catch (e) {}
+}
+document.getElementById('exportSheet').onclick = () => {
+  const { canvas: c, meta } = buildSheet(+document.getElementById('scale').value);
+  download(fileName() + '_sprites.png', c.toDataURL('image/png'));
+  setTimeout(() => download(fileName() + '_sprites.json',
+    URL.createObjectURL(new Blob([JSON.stringify(meta, null, 2)], { type: 'application/json' }))), 300);
+};
+const fileIn = document.getElementById('fileIn');
+document.getElementById('importJson').onclick = () => fileIn.click();
+fileIn.onchange = async () => {
+  try {
+    const data = JSON.parse(await fileIn.files[0].text());
+    state = { ...DEFAULT_STATE(), ...data, colors: { ...DEFAULT_COLORS, ...data.colors } };
+    nameEl.value = state.name;
+    document.getElementById('outline').checked = state.outline;
+    buildParts(); buildColors(); render();
+  } catch (e) { alert('No se pudo leer el archivo.'); }
+  fileIn.value = '';
+};
+
+// ---------- Fondo del escenario (assets/fondos.js) ----------
+const stars = document.getElementById('stars');
+const sctx = stars.getContext('2d');
+const bgSel = document.getElementById('bg');
+let bgKey = 'estrellas';
+try { bgKey = localStorage.getItem('psf-bg') || bgKey; } catch (e) {}
+if (!FONDOS.list[bgKey]) bgKey = 'estrellas';
+for (const [k, b] of Object.entries(FONDOS.list)) bgSel.add(new Option(b.name, k, false, k === bgKey));
+bgSel.onchange = () => {
+  bgKey = bgSel.value; FONDOS.load(bgKey).catch(() => {});
+  try { localStorage.setItem('psf-bg', bgKey); } catch (e) {}
+};
+FONDOS.load(bgKey).catch(() => {});
+function resizeStars() { stars.width = stars.clientWidth; stars.height = stars.clientHeight; }
+function tick(t) {
+  FONDOS.draw(sctx, bgKey, t / 1000, stars.width, stars.height);
+  requestAnimationFrame(tick);
+}
+window.addEventListener('resize', resizeStars);
+resizeStars(); requestAnimationFrame(tick);
+
+buildParts(); buildColors(); render();
+requestAnimationFrame(animTick);
+</script>
+</body>
+</html>
