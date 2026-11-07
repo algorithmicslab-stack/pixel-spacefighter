@@ -50,6 +50,7 @@
 <div id="girar"><span>⟳</span>Gira la pantalla en horizontal para jugar</div>
 
 <script src="assets/fondos.js"></script>
+<script src="assets/piloto.js"></script>
 <script>
 // =====================================================================
 //  PIXEL SPACEFIGHTER — juego de plataformas y peleas en 3 niveles.
@@ -80,6 +81,8 @@ addEventListener('resize', fit); fit();
 let sheet = null, sheetImg = null, pilot = { colors: {}, parts: {} };
 try { sheet = JSON.parse(localStorage.getItem('psf-sheet')); } catch (e) {}
 try { pilot = JSON.parse(localStorage.getItem('psf-character')) || pilot; } catch (e) {}
+// sin piloto guardado en este navegador (GitHub Pages, iPad nuevo…): usar el piloto por defecto
+if (!sheet && window.PILOTO_DEFAULT) { sheet = PILOTO_DEFAULT.sheet; if (!pilot.colors.accent) pilot = PILOTO_DEFAULT.character || pilot; }
 const ACCENT = (pilot.colors && pilot.colors.accent) || '#ff5c5c';
 const VISOR = (pilot.colors && pilot.colors.visor) || '#3fd8ff';
 const WEAPON = (pilot.parts && pilot.parts.weapon) ?? 1; // 0 nada, 1 bláster, 2 espada, 3 escudo

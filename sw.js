@@ -1,8 +1,8 @@
 // Modo sin internet: guarda las páginas e imágenes la primera vez que se cargan.
 // Cambia VERSION al publicar cambios para que los iPads bajen la versión nueva.
-const VERSION = 'psf-1';
+const VERSION = 'psf-2';
 const BASE = ['./', 'index.html', 'juego.html', 'referencias.html', 'foto.html', 'manifest.webmanifest',
-  'assets/fondos.js', 'assets/sprites.js', 'assets/opengameart/heart.png', 'assets/icon-180.png'];
+  'assets/fondos.js', 'assets/sprites.js', 'assets/piloto.js', 'assets/opengameart/heart.png', 'assets/icon-180.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(BASE)).then(() => self.skipWaiting()));
